@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.API", "Auth.API\Auth.API.csproj", "{BE4891DA-1C05-4FBC-983E-6B4B79474EBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Order.API", "Order.API\Order.API.csproj", "{64E7C0B6-6DF5-4585-AE8D-3B89A92E1E41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payment.API", "Payment.API\Payment.API.csproj", "{71A7DA67-526F-446B-AD87-FC053AF561EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Delivery.API", "Delivery.API\Delivery.API.csproj", "{82BCC764-4D24-4521-A4C2-C9B8019C96A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{769ADCF8-E18C-4370-A876-B18CD6FC9153}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Core", "Shared.Core\Shared.Core.csproj", "{4CC185DC-B871-4486-B00C-CD8471883979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Messages", "Shared.Messages\Shared.Messages.csproj", "{4B327006-FDE0-4FD6-AAF0-7FC62C7008D3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{366C0111-DA4C-45B3-9C0C-3B2F3D087132}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BE4891DA-1C05-4FBC-983E-6B4B79474EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE4891DA-1C05-4FBC-983E-6B4B79474EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE4891DA-1C05-4FBC-983E-6B4B79474EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE4891DA-1C05-4FBC-983E-6B4B79474EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64E7C0B6-6DF5-4585-AE8D-3B89A92E1E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64E7C0B6-6DF5-4585-AE8D-3B89A92E1E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64E7C0B6-6DF5-4585-AE8D-3B89A92E1E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64E7C0B6-6DF5-4585-AE8D-3B89A92E1E41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71A7DA67-526F-446B-AD87-FC053AF561EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71A7DA67-526F-446B-AD87-FC053AF561EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71A7DA67-526F-446B-AD87-FC053AF561EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71A7DA67-526F-446B-AD87-FC053AF561EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82BCC764-4D24-4521-A4C2-C9B8019C96A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82BCC764-4D24-4521-A4C2-C9B8019C96A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82BCC764-4D24-4521-A4C2-C9B8019C96A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82BCC764-4D24-4521-A4C2-C9B8019C96A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{769ADCF8-E18C-4370-A876-B18CD6FC9153}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{769ADCF8-E18C-4370-A876-B18CD6FC9153}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{769ADCF8-E18C-4370-A876-B18CD6FC9153}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{769ADCF8-E18C-4370-A876-B18CD6FC9153}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CC185DC-B871-4486-B00C-CD8471883979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CC185DC-B871-4486-B00C-CD8471883979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CC185DC-B871-4486-B00C-CD8471883979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CC185DC-B871-4486-B00C-CD8471883979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B327006-FDE0-4FD6-AAF0-7FC62C7008D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B327006-FDE0-4FD6-AAF0-7FC62C7008D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B327006-FDE0-4FD6-AAF0-7FC62C7008D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B327006-FDE0-4FD6-AAF0-7FC62C7008D3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,197 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: fooddelivery-postgres
+    environment:
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fooddelivery-network
+
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: fooddelivery-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - fooddelivery-network
+
+  # Auth Microservice
+  auth-api:
+    build:
+      context: .
+      dockerfile: Auth.API/Dockerfile
+    container_name: fooddelivery-auth
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=auth_db;Username=postgres;Password=1111"
+      Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
+      Jwt__Issuer: "FoodDeliverySystem"
+      Jwt__Audience: "FoodDeliveryClients"
+      Jwt__AccessTokenExpiryMinutes: "60"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fooddelivery-network
+    restart: unless-stopped
+
+  # Order Microservice
+  order-api:
+    build:
+      context: .
+      dockerfile: Order.API/Dockerfile
+    container_name: fooddelivery-order
+    ports:
+      - "5002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=order_db;Username=postgres;Password=1111"
+      Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
+      Jwt__Issuer: "FoodDeliverySystem"
+      Jwt__Audience: "FoodDeliveryClients"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fooddelivery-network
+    restart: unless-stopped
+
+  # Payment Microservice
+  payment-api:
+    build:
+      context: .
+      dockerfile: Payment.API/Dockerfile
+    container_name: fooddelivery-payment
+    ports:
+      - "5003:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=payment_db;Username=postgres;Password=1111"
+      Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
+      Jwt__Issuer: "FoodDeliverySystem"
+      Jwt__Audience: "FoodDeliveryClients"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fooddelivery-network
+    restart: unless-stopped
+
+  # Delivery Microservice
+  delivery-api:
+    build:
+      context: .
+      dockerfile: Delivery.API/Dockerfile
+    container_name: fooddelivery-delivery
+    ports:
+      - "5004:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=delivery_db;Username=postgres;Password=1111"
+      Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
+      Jwt__Issuer: "FoodDeliverySystem"
+      Jwt__Audience: "FoodDeliveryClients"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "5672"
+      RabbitMQ__Username: "guest"
+      RabbitMQ__Password: "guest"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - fooddelivery-network
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    container_name: fooddelivery-gateway
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
+      Jwt__Issuer: "FoodDeliverySystem"
+      Jwt__Audience: "FoodDeliveryClients"
+    depends_on:
+      - auth-api
+      - order-api
+      - payment-api
+      - delivery-api
+    networks:
+      - fooddelivery-network
+    restart: unless-stopped
+
+  # # Frontend (React) - ������ ���� ���!
+  # frontend:
+  #   build:
+  #     context: ./fooddelivery-frontend
+  #     dockerfile: Dockerfile
+  #   container_name: fooddelivery-frontend
+  #   ports:
+  #     - "3000:80"
+  #   environment:
+  #     REACT_APP_API_BASE_URL: http://api-gateway:8080
+  #   depends_on:
+  #     - api-gateway
+  #   networks:
+  #     - fooddelivery-network
+  #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  fooddelivery-network:
+    driver: bridge
