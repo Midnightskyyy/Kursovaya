@@ -11,6 +11,9 @@ namespace Order.API.Entities
         public string ImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
+        public decimal AverageRating { get; set; } = 4.5m;
+        public int TotalReviews { get; set; } = 0;
+
         public virtual ICollection<Dish> Dishes { get; set; }
         public virtual ICollection<OrderEntity> Orders { get; set; }
     }
@@ -25,6 +28,8 @@ namespace Order.API.Entities
         public string ImageUrl { get; set; }
         public int PreparationTime { get; set; } // minutes
         public bool IsAvailable { get; set; } = true;
+
+        public decimal AverageRating { get; set; } = 4.5m;
 
         public virtual Restaurant Restaurant { get; set; }
     }
@@ -60,7 +65,6 @@ namespace Order.API.Entities
         public Guid UserId { get; set; }
         public Guid? RestaurantId { get; set; }
 
-        public virtual Restaurant Restaurant { get; set; }
         public virtual ICollection<CartItem> CartItems { get; set; }
     }
 
@@ -69,6 +73,7 @@ namespace Order.API.Entities
         public Guid CartId { get; set; }
         public Guid DishId { get; set; }
         public int Quantity { get; set; }
+        public Guid RestaurantId { get; set; }
 
         public virtual ShoppingCart Cart { get; set; }
         public virtual Dish Dish { get; set; }

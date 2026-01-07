@@ -22,6 +22,55 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "fooddelivery-frontend", "fooddelivery-frontend", "{1CFDAD0F-4636-4DC6-9F49-B3EBD6BE49E3}"
+	ProjectSection(SolutionItems) = preProject
+		auth.html = auth.html
+		cart.html = cart.html
+		checkout.html = checkout.html
+		delivery.html = delivery.html
+		index.html = index.html
+		menu.html = menu.html
+		orders.html = orders.html
+		profile.html = profile.html
+		register.html = register.html
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "css", "css", "{FBD21A69-7D84-4371-903F-AFC213B099BD}"
+	ProjectSection(SolutionItems) = preProject
+		responsive.css = responsive.css
+		style.css = style.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "js", "js", "{73856A93-8536-4C00-A0B9-753BBAB15FEB}"
+	ProjectSection(SolutionItems) = preProject
+		api.js = api.js
+		auth.js = auth.js
+		cart.js = cart.js
+		checkout.js = checkout.js
+		delivery.js = delivery.js
+		menu.js = menu.js
+		orders.js = orders.js
+		profile.js = profile.js
+		utils.js = utils.js
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{AF805CFD-861F-48A0-B21E-E1E7D69B2836}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dishes", "dishes", "{C22AED3B-62E0-4983-810D-2A88D6863401}"
+	ProjectSection(SolutionItems) = preProject
+		Borsch.jfif = Borsch.jfif
+		Hamburger.jfif = Hamburger.jfif
+		pizza-fourcheese.jfif = pizza-fourcheese.jfif
+		pizza-peperonni.jfif = pizza-peperonni.jfif
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "restaurants", "restaurants", "{01299C81-94E1-4DC7-BE2D-89D9E3955F02}"
+	ProjectSection(SolutionItems) = preProject
+		burgernaia.jfif = burgernaia.jfif
+		foodia.jfif = foodia.jfif
+		Pizzeria.jfif = Pizzeria.jfif
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,5 +108,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FBD21A69-7D84-4371-903F-AFC213B099BD} = {1CFDAD0F-4636-4DC6-9F49-B3EBD6BE49E3}
+		{73856A93-8536-4C00-A0B9-753BBAB15FEB} = {1CFDAD0F-4636-4DC6-9F49-B3EBD6BE49E3}
+		{AF805CFD-861F-48A0-B21E-E1E7D69B2836} = {1CFDAD0F-4636-4DC6-9F49-B3EBD6BE49E3}
+		{C22AED3B-62E0-4983-810D-2A88D6863401} = {AF805CFD-861F-48A0-B21E-E1E7D69B2836}
+		{01299C81-94E1-4DC7-BE2D-89D9E3955F02} = {AF805CFD-861F-48A0-B21E-E1E7D69B2836}
 	EndGlobalSection
 EndGlobal

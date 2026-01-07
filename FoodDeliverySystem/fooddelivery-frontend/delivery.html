@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отслеживание доставки - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="delivery-page">
+            <div class="delivery-container">
+                <!-- Левая колонка - статус доставки -->
+                <div class="delivery-status-section">
+                    <div class="section-header">
+                        <h1>Отслеживание доставки</h1>
+                        <p>Следите за статусом вашего заказа в реальном времени</p>
+                    </div>
+
+                    <!-- Выбор заказа для отслеживания -->
+                    <div class="order-selector">
+                        <label for="orderSelect">Выберите заказ:</label>
+                        <select id="orderSelect" class="order-select">
+                            <option value="">Выберите заказ для отслеживания</option>
+                            <!-- Опции будут загружены через JS -->
+                        </select>
+                    </div>
+
+                    <!-- Статус доставки -->
+                    <div class="delivery-card" id="deliveryCard">
+                        <div class="delivery-header">
+                            <h2 id="deliveryOrderNumber">Заказ #12345</h2>
+                            <span class="status-badge" id="deliveryStatus">В пути</span>
+                        </div>
+
+                        <!-- Шаги доставки -->
+                        <div class="delivery-timeline">
+                            <div class="timeline-step active">
+                                <div class="step-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Заказ принят</h4>
+                                    <p class="step-time" id="step1Time">10:30</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-step active">
+                                <div class="step-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Готовится</h4>
+                                    <p class="step-time" id="step2Time">10:35</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Передан курьеру</h4>
+                                    <p class="step-time" id="step3Time">Ожидается</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>В пути</h4>
+                                    <p class="step-time" id="step4Time">Ожидается</p>
+                                </div>
+                            </div>
+
+                            <div class="timeline-step">
+                                <div class="step-icon">
+                                    <i class="fas fa-circle"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Доставлен</h4>
+                                    <p class="step-time" id="step5Time">Ожидается</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Информация о курьере -->
+                        <div class="courier-info" id="courierInfo">
+                            <h3><i class="fas fa-motorcycle"></i> Ваш курьер</h3>
+                            <div class="courier-details">
+                                <div class="courier-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="courier-text">
+                                    <h4 id="courierName">Иван Петров</h4>
+                                    <p><i class="fas fa-star"></i> Рейтинг: <span id="courierRating">4.8</span></p>
+                                    <p><i class="fas fa-phone"></i> <span id="courierPhone">+7 (999) 123-45-67</span></p>
+                                </div>
+                            </div>
+                            <button class="btn btn-outline btn-sm" id="callCourierBtn">
+                                <i class="fas fa-phone"></i> Позвонить курьеру
+                            </button>
+                        </div>
+
+                        <!-- Карта доставки -->
+                        <div class="delivery-map">
+                            <div class="map-placeholder">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <p>Карта отслеживания доставки</p>
+                                <p class="map-note">Курьер находится в <span id="distance">1.2</span> км от вас</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Если нет активных доставок -->
+                    <div class="no-delivery" id="noDelivery">
+                        <i class="fas fa-truck"></i>
+                        <h3>Нет активных доставок</h3>
+                        <p>У вас нет заказов в процессе доставки</p>
+                        <a href="orders.html" class="btn btn-outline">Посмотреть историю заказов</a>
+                        <a href="menu.html" class="btn btn-primary">Сделать новый заказ</a>
+                    </div>
+                </div>
+
+                <!-- Правая колонка - детали заказа -->
+                <div class="delivery-details-section">
+                    <div class="details-card">
+                        <h2>Детали заказа</h2>
+
+                        <div class="detail-row">
+                            <span>Номер заказа:</span>
+                            <span id="detailOrderNumber">12345</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Ресторан:</span>
+                            <span id="detailRestaurant">Pizza Hut</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Адрес доставки:</span>
+                            <span id="detailAddress">ул. Примерная, д. 10, кв. 25</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Время заказа:</span>
+                            <span id="detailOrderTime">10:30</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Ожидаемое время доставки:</span>
+                            <span id="detailDeliveryTime">11:15</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Способ оплаты:</span>
+                            <span id="detailPayment">Карта онлайн</span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span>Сумма заказа:</span>
+                            <span class="detail-amount" id="detailAmount">1,250 ₽</span>
+                        </div>
+                    </div>
+
+                    <div class="order-items-card">
+                        <h3>Состав заказа</h3>
+                        <div class="order-items-list" id="deliveryOrderItems">
+                            <!-- Товары будут загружены динамически -->
+                        </div>
+                    </div>
+
+                    <div class="support-card">
+                        <h3><i class="fas fa-headset"></i> Нужна помощь?</h3>
+                        <p>Если у вас возникли проблемы с доставкой, свяжитесь с поддержкой:</p>
+                        <div class="support-contacts">
+                            <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                            <p><i class="fas fa-envelope"></i> support@fooddelivery.com</p>
+                        </div>
+                        <button class="btn btn-outline btn-block" id="supportChatBtn">
+                            <i class="fas fa-comments"></i> Открыть чат поддержки
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/delivery.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Загрузка заказов для отслеживания
+            loadOrdersForTracking();
+
+            // Выбор заказа
+            document.getElementById('orderSelect').addEventListener('change', function() {
+                if (this.value) {
+                    trackOrder(this.value);
+                }
+            });
+
+            // Звонок курьеру
+            document.getElementById('callCourierBtn').addEventListener('click', function() {
+                const phone = document.getElementById('courierPhone').textContent;
+                if (phone) {
+                    alert(`Имитация звонка на номер: ${phone}`);
+                }
+            });
+
+            // Чат поддержки
+            document.getElementById('supportChatBtn').addEventListener('click', function() {
+                alert('Чат поддержки будет открыт в новом окне');
+                // В реальном приложении здесь будет открытие чата
+            });
+
+            // Автоматическое обновление статуса каждые 30 секунд
+            setInterval(() => {
+                const selectedOrder = document.getElementById('orderSelect').value;
+                if (selectedOrder) {
+                    trackOrder(selectedOrder);
+                }
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

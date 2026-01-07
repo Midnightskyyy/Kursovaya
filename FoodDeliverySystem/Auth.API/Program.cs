@@ -1,4 +1,4 @@
-using Auth.API.Data;
+﻿using Auth.API.Data;
 using Auth.API.Entities;
 using Auth.API.Interfaces;
 using Auth.API.Middleware;
@@ -12,11 +12,18 @@ using Microsoft.OpenApi.Models;
 using Shared.Messages.Interfaces;
 using Shared.Messages.Infrastructure;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -99,11 +106,19 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// Apply migrations
+
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+        dbContext.Database.Migrate();  // Применяет миграции
+        Console.WriteLine("✅ Миграции AuthDbContext применены успешно");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Ошибка при применении миграций AuthDbContext: {ex.Message}");
+    }
 }
 
 app.Run();

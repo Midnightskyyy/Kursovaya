@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск блюд или ресторанов...">
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link active">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link cart-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                    <span class="cart-count" id="mobileCartCount">0</span>
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="menu-page">
+            <!-- Фильтры и категории -->
+            <section class="filters-section">
+                <div class="section-header">
+                    <h1>Меню</h1>
+                </div>
+
+            </section>
+
+            <!-- Рестораны -->
+            <section class="restaurants-section">
+                <h2>Рестораны</h2>
+                    <p>Выберите ресторан</p>
+                <div class="restaurants-grid" id="restaurantsGrid">
+                    <!-- Рестораны будут загружены через JS -->
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Загружаем рестораны...</p>
+                    </div>
+                </div>
+            </section>
+
+            
+
+                <!-- Сортировка -->
+                <div class="sorting">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="popular">По популярности</option>
+                        <option value="price-asc">По цене (низкая → высокая)</option>
+                        <option value="price-desc">По цене (высокая → низкая)</option>
+                        <option value="name">По названию (А-Я)</option>
+                    </select>
+                </div>
+
+            <!-- Блюда -->
+            <section class="dishes-section">
+                <h2>Блюда</h2>
+                <div class="dishes-grid" id="dishesGrid">
+                    <!-- Блюда будут загружены через JS -->
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Загружаем меню...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2025 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Мы в соцсетях</h4>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно деталей блюда -->
+    <div class="modal" id="dishModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <div class="modal-body" id="dishModalBody">
+                <!-- Контент будет загружен динамически -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/menu.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadRestaurants();
+            loadDishes();
+            updateCartCount();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Закрытие мобильного меню при клике на ссылку
+            document.querySelectorAll('.mobile-nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('mobileMenu').classList.remove('active');
+                });
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Поиск
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                searchDishes(e.target.value);
+            });
+
+            // Категории
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterByCategory(this.dataset.category);
+                });
+            });
+
+            // Сортировка
+            document.getElementById('sortSelect').addEventListener('change', function() {
+                sortDishes(this.value);
+            });
+
+            // Модальное окно
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('dishModal').style.display = 'none';
+            });
+
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('dishModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

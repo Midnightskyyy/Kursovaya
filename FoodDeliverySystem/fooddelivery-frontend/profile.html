@@ -1,0 +1,408 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link active">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="profile-page">
+            <div class="profile-container">
+                <!-- Левая колонка - информация профиля -->
+                <div class="profile-info-section">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="profile-title">
+                            <h1 id="profileName">Иван Иванов</h1>
+                            <p id="profileEmail">ivan@example.com</p>
+                            <p class="member-since">
+                                <i class="fas fa-calendar"></i> Участник с <span id="joinDate">января 2024</span>
+                            </p>
+                        </div>
+                        <button class="btn btn-outline" id="editProfileBtn">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                    </div>
+
+                    <!-- Статистика -->
+                    <div class="profile-stats">
+                        <div class="stat-card">
+                            <h3 id="totalOrders">0</h3>
+                            <p>Всего заказов</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="totalSpent">0 ₽</h3>
+                            <p>Всего потрачено</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="avgOrder">0 ₽</h3>
+                            <p>Средний чек</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="deliveryCount">0</h3>
+                            <p>Доставок</p>
+                        </div>
+                    </div>
+
+                    <!-- Форма редактирования профиля -->
+                    <div class="edit-profile-form" id="editProfileForm" style="display: none;">
+                        <h2>Редактировать профиль</h2>
+
+                        <form id="profileForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editFirstName">Имя</label>
+                                    <input type="text" id="editFirstName"
+                                           placeholder="Имя">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="editLastName">Фамилия</label>
+                                    <input type="text" id="editLastName"
+                                           placeholder="Фамилия">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editEmail">Email</label>
+                                <input type="email" id="editEmail"
+                                       placeholder="Email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPhone">Телефон</label>
+                                <input type="tel" id="editPhone"
+                                       placeholder="+7 (999) 123-45-67">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editAddress">Адрес доставки</label>
+                                <textarea id="editAddress" rows="3"
+                                          placeholder="Основной адрес доставки"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" id="cancelEditBtn">
+                                    Отмена
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    Сохранить изменения
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Сохраненные адреса -->
+                    <div class="addresses-section">
+                        <h2><i class="fas fa-map-marker-alt"></i> Сохраненные адреса</h2>
+                        <div class="addresses-list" id="addressesList">
+                            <!-- Адреса будут загружены через JS -->
+                        </div>
+                        <button class="btn btn-outline" id="addAddressBtn">
+                            <i class="fas fa-plus"></i> Добавить новый адрес
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Правая колонка - настройки и действия -->
+                <div class="profile-actions-section">
+                    <!-- Быстрые действия -->
+                    <div class="actions-card">
+                        <h2>Быстрые действия</h2>
+                        <div class="action-buttons">
+                            <a href="menu.html" class="action-btn">
+                                <i class="fas fa-utensils"></i>
+                                <span>Сделать заказ</span>
+                            </a>
+                            <a href="orders.html" class="action-btn">
+                                <i class="fas fa-history"></i>
+                                <span>Мои заказы</span>
+                            </a>
+                            <button class="action-btn" id="trackDeliveryBtn">
+                                <i class="fas fa-truck"></i>
+                                <span>Отследить доставку</span>
+                            </button>
+                            <a href="#" class="action-btn" id="supportBtn">
+                                <i class="fas fa-headset"></i>
+                                <span>Поддержка</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Настройки аккаунта -->
+                    <div class="settings-card">
+                        <h2>Настройки аккаунта</h2>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Уведомления</h4>
+                                <p>Настройте email и push-уведомления</p>
+                            </div>
+                            <div class="setting-action">
+                                <label class="switch">
+                                    <input type="checkbox" id="notificationsToggle" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Сохраненные карты</h4>
+                                <p>Управление платежными методами</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-text" id="manageCardsBtn">
+                                    Управлять
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Промокоды</h4>
+                                <p>Ваши активные промокоды</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-text" id="viewPromoCodesBtn">
+                                    Просмотреть
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Сменить пароль</h4>
+                                <p>Обновите пароль вашего аккаунта</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-text" id="changePasswordBtn">
+                                    Сменить
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <h4>Удалить аккаунт</h4>
+                                <p>Навсегда удалить ваш аккаунт</p>
+                            </div>
+                            <div class="setting-action">
+                                <button class="btn btn-danger" id="deleteAccountBtn">
+                                    Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Поддержка -->
+                    <div class="support-card">
+                        <h3><i class="fas fa-question-circle"></i> Нужна помощь?</h3>
+                        <p>Если у вас есть вопросы или проблемы, наша поддержка всегда готова помочь</p>
+                        <div class="support-contacts">
+                            <p><i class="fas fa-phone"></i> +7 (999) 123-45-67</p>
+                            <p><i class="fas fa-envelope"></i> support@fooddelivery.com</p>
+                            <p><i class="fas fa-clock"></i> Круглосуточно</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно добавления адреса -->
+    <div class="modal" id="addressModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAddressModal">&times;</button>
+            <div class="modal-body">
+                <h2>Добавить новый адрес</h2>
+                <form id="newAddressForm">
+                    <div class="form-group">
+                        <label for="newAddressTitle">Название адреса</label>
+                        <input type="text" id="newAddressTitle"
+                               placeholder="Например: Дом, Работа, Родители">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newAddress">Адрес *</label>
+                        <input type="text" id="newAddress" required
+                               placeholder="Улица, дом, квартира">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newCity">Город *</label>
+                            <input type="text" id="newCity" required
+                                   placeholder="Москва">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newPostalCode">Индекс</label>
+                            <input type="text" id="newPostalCode"
+                                   placeholder="123456">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newAddressDetails">Детали</label>
+                        <textarea id="newAddressDetails" rows="3"
+                                  placeholder="Подъезд, этаж, домофон, комментарий"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" id="cancelAddressBtn">
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Сохранить адрес
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/profile.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Загрузка профиля
+            loadProfile();
+            loadProfileStats();
+            loadSavedAddresses();
+
+            // Редактирование профиля
+            document.getElementById('editProfileBtn').addEventListener('click', toggleEditProfile);
+            document.getElementById('cancelEditBtn').addEventListener('click', toggleEditProfile);
+            document.getElementById('profileForm').addEventListener('submit', saveProfile);
+
+            // Адреса
+            document.getElementById('addAddressBtn').addEventListener('click', showAddAddressModal);
+            document.getElementById('closeAddressModal').addEventListener('click', function() {
+                document.getElementById('addressModal').style.display = 'none';
+            });
+            document.getElementById('cancelAddressBtn').addEventListener('click', function() {
+                document.getElementById('addressModal').style.display = 'none';
+            });
+            document.getElementById('newAddressForm').addEventListener('submit', saveNewAddress);
+
+            // Закрытие модальных окон при клике вне их
+            window.addEventListener('click', function(event) {
+                const addressModal = document.getElementById('addressModal');
+                if (event.target === addressModal) {
+                    addressModal.style.display = 'none';
+                }
+            });
+
+            // Быстрые действия
+            document.getElementById('trackDeliveryBtn').addEventListener('click', function() {
+                window.location.href = 'delivery.html';
+            });
+            document.getElementById('supportBtn').addEventListener('click', function() {
+                alert('Открывается чат поддержки');
+            });
+
+            // Настройки
+            document.getElementById('manageCardsBtn').addEventListener('click', function() {
+                alert('Управление картами - в разработке');
+            });
+            document.getElementById('viewPromoCodesBtn').addEventListener('click', function() {
+                alert('Промокоды - в разработке');
+            });
+            document.getElementById('changePasswordBtn').addEventListener('click', function() {
+                alert('Смена пароля - в разработке');
+            });
+            document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить аккаунт? Это действие необратимо.')) {
+                    alert('Удаление аккаунта - в разработке');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

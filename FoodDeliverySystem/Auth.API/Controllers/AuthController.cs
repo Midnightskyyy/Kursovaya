@@ -63,7 +63,8 @@ namespace Auth.API.Controllers
                 user.Profile = new UserProfile
                 {
                     FirstName = request.FirstName,
-                    LastName = request.LastName
+                    LastName = request.LastName,
+                    AvatarUrl = "C:\\Users\\User\\Desktop\\education 5-6 sem\\Backend\\FoodDeliverySolution\\Kursovaya\\FoodDeliverySystem.avatar.jfif"
                 };
 
                 await _userRepository.AddAsync(user);
@@ -159,14 +160,21 @@ namespace Auth.API.Controllers
             if (user == null)
                 return NotFound(ApiResponse.Fail("User not found"));
 
-            return Ok(ApiResponse.Ok(new
+            var profileDto = new
             {
                 user.Id,
                 user.Email,
                 user.PhoneNumber,
                 user.Role,
-                Profile = user.Profile
-            }));
+                Profile = user.Profile != null ? new
+                {
+                    user.Profile.FirstName,
+                    user.Profile.LastName,
+                    user.Profile.AvatarUrl
+                } : null
+            };
+
+            return Ok(ApiResponse.Ok(profileDto));
         }
     }
 

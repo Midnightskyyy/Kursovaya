@@ -77,15 +77,19 @@ namespace Order.API.Data
                     .HasForeignKey(e => e.CartId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasOne(e => e.Restaurant)
-                    .WithMany()
-                    .HasForeignKey(e => e.RestaurantId);
             });
 
             modelBuilder.Entity<CartItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.CartId, e.DishId }).IsUnique();
+
+                // Добавляем конфигурацию для RestaurantId
+                entity.Property(e => e.RestaurantId).IsRequired();
+
+                entity.Property(e => e.Quantity)
+                    .IsRequired()
+                    .HasDefaultValue(1);
 
                 entity.HasOne(e => e.Dish)
                     .WithMany()

@@ -45,46 +45,77 @@ namespace Order.API.Repositories
         {
             return await _context.ShoppingCarts
                 .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Dish)
-                .Include(c => c.Restaurant)
+                    .ThenInclude(ci => ci.Dish)
+                        .ThenInclude(d => d.Restaurant) // Загружаем ресторан блюда
                 .FirstOrDefaultAsync(c => c.UserId == userId);
         }
 
+        // Order.API/Repositories/OrderRepository.cs
         public async Task AddToCartAsync(Guid userId, Guid dishId, int quantity)
         {
-            var cart = await GetOrCreateCartAsync(userId);
-            var dish = await _context.Dishes.FindAsync(dishId);
+            try
+            {
 
-            if (dish == null || !dish.IsAvailable)
-                throw new ArgumentException("Dish not available");
+                // 1. Получаем или создаем корзину
+                var cart = await _context.ShoppingCarts
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
 
-            // Проверяем, можно ли добавлять блюда только из одного ресторана
-            if (cart.RestaurantId.HasValue && cart.RestaurantId != dish.RestaurantId)
-            {
-                // Очищаем корзину перед добавлением блюда из другого ресторана
-                _context.CartItems.RemoveRange(cart.CartItems);
-                cart.RestaurantId = dish.RestaurantId;
-            }
-            else if (!cart.RestaurantId.HasValue)
-            {
-                cart.RestaurantId = dish.RestaurantId;
-            }
-
-            var existingItem = cart.CartItems.FirstOrDefault(ci => ci.DishId == dishId);
-            if (existingItem != null)
-            {
-                existingItem.Quantity += quantity;
-            }
-            else
-            {
-                cart.CartItems.Add(new CartItem
+                if (cart == null)
                 {
-                    DishId = dishId,
-                    Quantity = quantity
-                });
-            }
+                    cart = new ShoppingCart
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = userId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    await _context.ShoppingCarts.AddAsync(cart);
+                    await _context.SaveChangesAsync();
+                }
 
-            await _context.SaveChangesAsync();
+                // 2. Получаем блюдо
+                var dish = await _context.Dishes.FindAsync(dishId);
+                if (dish == null)
+                {
+                    throw new ArgumentException($"Dish with id {dishId} not found");
+                }
+
+                if (!dish.IsAvailable)
+                {
+                    throw new ArgumentException($"Dish {dish.Name} is not available");
+                }
+
+                // 3. Ищем существующий элемент корзины
+                var existingItem = await _context.CartItems
+                    .FirstOrDefaultAsync(ci => ci.CartId == cart.Id && ci.DishId == dishId);
+
+                if (existingItem != null)
+                {
+                    // Увеличиваем количество существующего элемента
+                    existingItem.Quantity += quantity;
+                    existingItem.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    // Создаем новый элемент корзины
+                    var cartItem = new CartItem
+                    {
+                        Id = Guid.NewGuid(),
+                        CartId = cart.Id,
+                        DishId = dishId,
+                        RestaurantId = dish.RestaurantId, // Сохраняем ресторан
+                        Quantity = quantity,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _context.CartItems.AddAsync(cartItem);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public async Task RemoveFromCartAsync(Guid userId, Guid itemId)
@@ -253,15 +284,25 @@ namespace Order.API.Repositories
         }
 
         private async Task<ShoppingCart> GetOrCreateCartAsync(Guid userId)
-        {
-            var cart = await GetCartAsync(userId);
-            if (cart == null)
-            {
-                cart = new ShoppingCart { UserId = userId };
-                await _context.ShoppingCarts.AddAsync(cart);
-                await _context.SaveChangesAsync();
-            }
-            return cart;
-        }
+{
+    var cart = await _context.ShoppingCarts
+        .Include(c => c.CartItems)
+        .ThenInclude(ci => ci.Dish)
+        .FirstOrDefaultAsync(c => c.UserId == userId);
+    
+    if (cart == null)
+    {
+        cart = new ShoppingCart 
+        { 
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            CreatedAt = DateTime.UtcNow 
+        };
+        await _context.ShoppingCarts.AddAsync(cart);
+        await _context.SaveChangesAsync();
+    }
+    
+    return cart;
+}
     }
 }

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link active cart-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                        <span class="cart-count" id="cartCount">0</span>
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                    <span class="cart-count" id="mobileCartCount">0</span>
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="cart-page">
+            <div class="cart-container">
+                <!-- Левая колонка - товары в корзине -->
+                <div class="cart-items-section">
+                    <div class="section-header">
+                        <h1>Ваша корзина</h1>
+                        <button class="btn btn-text" id="clearCartBtn">
+                            <i class="fas fa-trash"></i> Очистить корзину
+                        </button>
+                    </div>
+
+                    <div class="cart-items" id="cartItems">
+                        <!-- Товары будут загружены через JS -->
+                        <div class="empty-cart" id="emptyCart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <h3>Корзина пуста</h3>
+                            <p>Добавьте товары из меню</p>
+                            <a href="menu.html" class="btn btn-primary">Перейти в меню</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка - итоги и оформление -->
+                <div class="cart-summary-section">
+                    <div class="summary-card">
+                        <h2>Итого</h2>
+
+                        <div class="summary-row">
+                            <span>Товары:</span>
+                            <span id="subtotal">0 ₽</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Доставка:</span>
+                            <span id="deliveryCost">Бесплатно</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-total">
+                            <span>К оплате:</span>
+                            <span class="total-amount" id="totalAmount">0 ₽</span>
+                        </div>
+
+                        <div class="promo-code">
+                            <input type="text" id="promoCode" placeholder="Промокод">
+                            <button class="btn btn-outline" id="applyPromoBtn">Применить</button>
+                        </div>
+
+                        <button class="btn btn-primary btn-block btn-large" id="checkoutBtn">
+                            Перейти к оформлению
+                        </button>
+
+                        <p class="summary-note">
+                            <i class="fas fa-info-circle"></i>
+                            Бесплатная доставка от 500 ₽
+                        </p>
+                    </div>
+
+                    <div class="delivery-info">
+                        <h3><i class="fas fa-truck"></i> Доставка</h3>
+                        <p>Среднее время доставки: 30-45 минут</p>
+                        <p>Минимальный заказ: 300 ₽</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Загрузка корзины
+            loadCart();
+
+            // Очистка корзины
+            document.getElementById('clearCartBtn').addEventListener('click', clearCart);
+
+            // Оформление заказа
+            document.getElementById('checkoutBtn').addEventListener('click', function() {
+                window.location.href = 'checkout.html';
+            });
+
+            // Применение промокода
+            document.getElementById('applyPromoBtn').addEventListener('click', applyPromoCode);
+            document.getElementById('promoCode').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyPromoCode();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

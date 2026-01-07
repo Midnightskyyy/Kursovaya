@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                    </a>
+                    <a href="orders.html" class="nav-link active">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="orders-page">
+            <div class="orders-container">
+                <!-- Фильтры заказов -->
+                <div class="orders-filters">
+                    <h1>История заказов</h1>
+
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">
+                            Все заказы
+                        </button>
+                        <button class="filter-tab" data-filter="active">
+                            Активные
+                        </button>
+                        <button class="filter-tab" data-filter="delivered">
+                            Доставленные
+                        </button>
+                        <button class="filter-tab" data-filter="cancelled">
+                            Отмененные
+                        </button>
+                    </div>
+
+                    <div class="search-orders">
+                        <input type="text" id="searchOrders" placeholder="Поиск по номеру заказа...">
+                        <button class="btn btn-outline" id="searchOrdersBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Список заказов -->
+                <div class="orders-list" id="ordersList">
+                    <!-- Заказы будут загружены через JS -->
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Загружаем историю заказов...</p>
+                    </div>
+                </div>
+
+                <!-- Пагинация -->
+                <div class="pagination" id="pagination">
+                    <!-- Пагинация будет создана через JS -->
+                </div>
+
+                <!-- Если нет заказов -->
+                <div class="no-orders" id="noOrders" style="display: none;">
+                    <i class="fas fa-history"></i>
+                    <h3>У вас еще нет заказов</h3>
+                    <p>Сделайте свой первый заказ и он появится здесь</p>
+                    <a href="menu.html" class="btn btn-primary">Перейти в меню</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно деталей заказа -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content modal-large">
+            <button class="modal-close" id="closeOrderModal">&times;</button>
+            <div class="modal-body" id="orderModalBody">
+                <!-- Контент будет загружен динамически -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/orders.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Загрузка заказов
+            loadOrders();
+
+            // Фильтры заказов
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    filterOrders(this.dataset.filter);
+                });
+            });
+
+            // Поиск заказов
+            document.getElementById('searchOrdersBtn').addEventListener('click', searchOrders);
+            document.getElementById('searchOrders').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchOrders();
+                }
+            });
+
+            // Модальное окно
+            document.getElementById('closeOrderModal').addEventListener('click', function() {
+                document.getElementById('orderModal').style.display = 'none';
+            });
+
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('orderModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

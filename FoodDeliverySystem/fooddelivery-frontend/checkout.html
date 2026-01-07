@@ -1,0 +1,425 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Шаги оформления заказа -->
+        <div class="checkout-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Адрес</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Оплата</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Подтверждение</div>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <main class="checkout-page">
+            <div class="checkout-container">
+                <!-- Левая колонка - формы -->
+                <div class="checkout-form-section">
+                    <!-- Шаг 1: Адрес доставки -->
+                    <section class="checkout-step active" id="step1">
+                        <h2>Адрес доставки</h2>
+
+                        <form id="addressForm">
+                            <div class="form-group">
+                                <label for="address">Адрес *</label>
+                                <input type="text" id="address" required
+                                       placeholder="Улица, дом, квартира">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city">Город *</label>
+                                    <input type="text" id="city" required
+                                           placeholder="Москва">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="postalCode">Индекс</label>
+                                    <input type="text" id="postalCode"
+                                           placeholder="123456">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="apartment">Квартира/Офис</label>
+                                <input type="text" id="apartment"
+                                       placeholder="Номер квартиры или офиса">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="entrance">Подъезд</label>
+                                <input type="text" id="entrance"
+                                       placeholder="Номер подъезда">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="floor">Этаж</label>
+                                <input type="text" id="floor"
+                                       placeholder="Номер этажа">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="intercom">Домофон</label>
+                                <input type="text" id="intercom"
+                                       placeholder="Код домофона">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="deliveryInstructions">Комментарий для курьера</label>
+                                <textarea id="deliveryInstructions" rows="3"
+                                          placeholder="Например: позвонить за 5 минут, оставить у двери и т.д."></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <a href="cart.html" class="btn btn-outline">Назад в корзину</a>
+                                <button type="button" class="btn btn-primary" id="nextStep1Btn">
+                                    Далее: Оплата
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- Шаг 2: Способ оплаты -->
+                    <section class="checkout-step" id="step2">
+                        <h2>Способ оплаты</h2>
+
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="card">
+                                <div class="method-header">
+                                    <i class="fas fa-credit-card"></i>
+                                    <div>
+                                        <h4>Банковская карта</h4>
+                                        <p>Visa, MasterCard, Мир</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-method" data-method="cash">
+                                <div class="method-header">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <div>
+                                        <h4>Наличными</h4>
+                                        <p>Оплата при получении</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-method" data-method="online">
+                                <div class="method-header">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <div>
+                                        <h4>Онлайн-кошелек</h4>
+                                        <p>ЮMoney, QIWI</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Форма для карты -->
+                        <form id="cardForm" class="payment-form">
+                            <div class="form-group">
+                                <label for="cardNumber">Номер карты</label>
+                                <input type="text" id="cardNumber"
+                                       placeholder="1234 5678 9012 3456"
+                                       maxlength="19">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cardExpiry">Срок действия</label>
+                                    <input type="text" id="cardExpiry"
+                                           placeholder="ММ/ГГ"
+                                           maxlength="5">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="cardCVC">CVC</label>
+                                    <input type="text" id="cardCVC"
+                                           placeholder="123"
+                                           maxlength="3">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cardHolder">Имя владельца</label>
+                                <input type="text" id="cardHolder"
+                                       placeholder="IVAN IVANOV">
+                            </div>
+
+                            <div class="form-options">
+                                <label class="checkbox">
+                                    <input type="checkbox" id="saveCard">
+                                    <span>Сохранить карту для будущих покупок</span>
+                                </label>
+                            </div>
+                        </form>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" id="prevStep2Btn">
+                                Назад
+                            </button>
+                            <button type="button" class="btn btn-primary" id="nextStep2Btn">
+                                Далее: Подтверждение
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Шаг 3: Подтверждение заказа -->
+                    <section class="checkout-step" id="step3">
+                        <h2>Подтверждение заказа</h2>
+
+                        <div class="confirmation-summary">
+                            <div class="summary-item">
+                                <h4>Адрес доставки</h4>
+                                <p id="summaryAddress"></p>
+                            </div>
+
+                            <div class="summary-item">
+                                <h4>Способ оплаты</h4>
+                                <p id="summaryPayment"></p>
+                            </div>
+
+                            <div class="summary-item">
+                                <h4>Состав заказа</h4>
+                                <div class="order-items-summary" id="orderItemsSummary">
+                                    <!-- Товары будут загружены динамически -->
+                                </div>
+                            </div>
+
+                            <div class="summary-total">
+                                <h4>Итого к оплате:</h4>
+                                <div class="total-amount" id="summaryTotal">0 ₽</div>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="checkbox">
+                                <input type="checkbox" id="termsCheck" required>
+                                <span>Я согласен с условиями доставки и возврата</span>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" id="prevStep3Btn">
+                                Назад
+                            </button>
+                            <button type="button" class="btn btn-primary btn-large" id="confirmOrderBtn">
+                                <i class="fas fa-check"></i> Подтвердить заказ
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Правая колонка - итоги -->
+                <div class="checkout-summary-section">
+                    <div class="summary-card">
+                        <h2>Ваш заказ</h2>
+
+                        <div class="order-items-preview" id="orderItemsPreview">
+                            <!-- Товары будут загружены динамически -->
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-row">
+                            <span>Товары:</span>
+                            <span id="checkoutSubtotal">0 ₽</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Доставка:</span>
+                            <span id="checkoutDelivery">Бесплатно</span>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="summary-total">
+                            <span>Итого:</span>
+                            <span class="total-amount" id="checkoutTotal">0 ₽</span>
+                        </div>
+
+                        <div class="estimated-delivery">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <p><strong>Примерное время доставки:</strong></p>
+                                <p id="deliveryTime">30-45 минут</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Футер -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FoodDelivery</h3>
+                    <p>© 2024 Все права защищены</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Поддержка</h4>
+                    <p>support@fooddelivery.com</p>
+                    <p>+7 (999) 123-45-67</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно успешного заказа -->
+    <div class="modal" id="successModal">
+        <div class="modal-content modal-success">
+            <div class="modal-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>Заказ успешно оформлен!</h2>
+            </div>
+            <div class="modal-body">
+                <p id="orderSuccessMessage">Ваш заказ #<span id="orderNumber">12345</span> принят в обработку.</p>
+                <p>Вы можете отслеживать статус доставки в разделе "Мои заказы".</p>
+
+                <div class="order-details">
+                    <p><strong>Номер заказа:</strong> <span id="modalOrderNumber">12345</span></p>
+                    <p><strong>Ожидаемое время доставки:</strong> <span id="modalDeliveryTime">18:30</span></p>
+                    <p><strong>Сумма к оплате:</strong> <span id="modalOrderTotal">0 ₽</span></p>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-outline" id="trackOrderBtn">
+                        <i class="fas fa-truck"></i> Отслеживать заказ
+                    </button>
+                    <button class="btn btn-primary" id="backToMenuBtn">
+                        <i class="fas fa-utensils"></i> Вернуться в меню
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/checkout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+
+            // Загрузка данных корзины
+            loadCheckoutData();
+
+            // Переключение шагов
+            document.getElementById('nextStep1Btn').addEventListener('click', goToStep2);
+            document.getElementById('prevStep2Btn').addEventListener('click', goToStep1);
+            document.getElementById('nextStep2Btn').addEventListener('click', goToStep3);
+            document.getElementById('prevStep3Btn').addEventListener('click', goToStep2);
+
+            // Методы оплаты
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                    this.classList.add('active');
+                    updatePaymentMethod(this.dataset.method);
+                });
+            });
+
+            // Форматирование ввода карты
+            document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
+            document.getElementById('cardExpiry').addEventListener('input', formatCardExpiry);
+
+            // Подтверждение заказа
+            document.getElementById('confirmOrderBtn').addEventListener('click', confirmOrder);
+
+            // Действия в модальном окне
+            document.getElementById('trackOrderBtn').addEventListener('click', function() {
+                window.location.href = 'delivery.html';
+            });
+
+            document.getElementById('backToMenuBtn').addEventListener('click', function() {
+                window.location.href = 'menu.html';
+            });
+
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('successModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

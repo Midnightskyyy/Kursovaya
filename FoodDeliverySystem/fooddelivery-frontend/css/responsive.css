@@ -1,0 +1,159 @@
+﻿/* Мобильные устройства (до 768px) */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Навигация */
+    .nav-links {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .mobile-menu.active {
+        display: block;
+    }
+
+    .search-container {
+        display: none;
+    }
+
+    /* Авторизация */
+    .auth-container {
+        flex-direction: column;
+    }
+
+    .auth-card {
+        max-width: 100%;
+        padding: 30px 20px;
+    }
+
+    .auth-image {
+        display: none;
+    }
+
+    /* Главная страница */
+    .hero {
+        flex-direction: column;
+        gap: 40px;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Меню */
+    .categories {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .restaurants-grid,
+    .dishes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Корзина и оформление заказа */
+    .cart-container,
+    .checkout-container,
+    .delivery-container,
+    .profile-container {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .checkout-steps {
+        gap: 20px;
+    }
+
+    .step::before {
+        display: none;
+    }
+
+    .modal-content {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+
+    /* Профиль */
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    /* Футер */
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+}
+
+/* Планшеты (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container {
+        max-width: 95%;
+    }
+
+    .restaurants-grid,
+    .dishes-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Десктоп (1024px и выше) */
+@media (min-width: 1024px) {
+    .container {
+        max-width: 1200px;
+    }
+}

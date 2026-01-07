@@ -23,7 +23,7 @@ namespace Auth.API.Entities
         public string LastName { get; set; }
         public string AvatarUrl { get; set; }
 
-        public virtual User User { get; set; }
+
     }
 
     public class RefreshToken : BaseEntity
@@ -34,6 +34,5 @@ namespace Auth.API.Entities
         public DateTime ExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual User User { get; set; }
     }
 }

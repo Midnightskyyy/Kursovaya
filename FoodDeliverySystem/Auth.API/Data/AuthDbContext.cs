@@ -23,15 +23,6 @@ namespace Auth.API.Data
                 entity.Property(e => e.PasswordHash).IsRequired();
                 entity.Property(e => e.Role).HasMaxLength(20);
 
-                entity.HasOne(e => e.Profile)
-                    .WithOne(e => e.User)
-                    .HasForeignKey<UserProfile>(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasMany(e => e.RefreshTokens)
-                    .WithOne(e => e.User)
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<UserProfile>(entity =>

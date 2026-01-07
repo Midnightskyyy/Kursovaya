@@ -28,11 +28,65 @@ namespace Order.API.Controllers
             {
                 var userId = GetUserId();
                 var cart = await _orderRepository.GetCartAsync(userId);
-                return Ok(ApiResponse.Ok(cart));
+
+                if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+                {
+                    return Ok(ApiResponse.Ok(new
+                    {
+                        Items = new List<object>(),
+                        Restaurants = new List<object>(),
+                        TotalAmount = 0
+                    }));
+                }
+
+                // Группируем товары по ресторанам
+                var itemsByRestaurant = cart.CartItems
+                    .GroupBy(ci => ci.RestaurantId)
+                    .Select(g => new
+                    {
+                        RestaurantId = g.Key,
+                        RestaurantName = g.First().Dish?.Restaurant?.Name ?? "Unknown Restaurant",
+                        Items = g.Select(ci => new
+                        {
+                            ci.Id,
+                            ci.DishId,
+                            DishName = ci.Dish?.Name ?? "Unknown",
+                            ci.Quantity,
+                            UnitPrice = ci.Dish?.Price ?? 0,
+                            Total = (ci.Dish?.Price ?? 0) * ci.Quantity,
+                            PreparationTime = ci.Dish?.PreparationTime ?? 15
+                        }).ToList(),
+                        RestaurantTotal = g.Sum(ci => (ci.Dish?.Price ?? 0) * ci.Quantity),
+                        MaxPreparationTime = g.Max(ci => ci.Dish?.PreparationTime ?? 15)
+                    }).ToList();
+
+                var response = new
+                {
+                    CartId = cart.Id,
+                    Items = cart.CartItems.Select(ci => new
+                    {
+                        ci.Id,
+                        ci.DishId,
+                        ci.RestaurantId,
+                        RestaurantName = ci.Dish?.Restaurant?.Name ?? "Unknown",
+                        DishName = ci.Dish?.Name ?? "Unknown",
+                        ci.Quantity,
+                        UnitPrice = ci.Dish?.Price ?? 0,
+                        Total = (ci.Dish?.Price ?? 0) * ci.Quantity,
+                        PreparationTime = ci.Dish?.PreparationTime ?? 15
+                    }).ToList(),
+                    GroupedByRestaurant = itemsByRestaurant,
+                    TotalAmount = cart.CartItems.Sum(ci => (ci.Dish?.Price ?? 0) * ci.Quantity),
+                    // Время доставки = максимальное время приготовления + 30 минут на доставку
+                    EstimatedDeliveryTime = itemsByRestaurant.Any() ?
+                        itemsByRestaurant.Max(r => r.MaxPreparationTime) + 30 : 45
+                };
+
+                return Ok(ApiResponse.Ok(response));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting cart for user");
+                _logger.LogError(ex, "Error getting cart");
                 return StatusCode(500, ApiResponse.Fail("Internal server error"));
             }
         }
