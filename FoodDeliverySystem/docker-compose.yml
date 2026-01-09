@@ -1,16 +1,17 @@
 version: '3.8'
 
 services:
-  # RabbitMQ Message Broker (в Docker)
+  # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
     container_name: fooddelivery-rabbitmq
     ports:
-      - "5672:5672"      # AMQP порт
-      - "15672:15672"    # Management UI порт
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -21,14 +22,14 @@ services:
     networks:
       - fooddelivery-network
 
-  # API Gateway (в Docker)
+  # API Gateway
   api-gateway:
     build:
       context: .
       dockerfile: ApiGateway/Dockerfile
     container_name: fooddelivery-gateway
     ports:
-      - "5000:8080"  # Локально:5000 → Контейнер:8080
+      - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       Jwt__Key: "YourSuperSecretKeyHereAtLeast32CharactersLong!"
@@ -37,12 +38,10 @@ services:
     networks:
       - fooddelivery-network
     depends_on:
-      - auth-api
-      - order-api
-      - payment-api
-      - delivery-api
+      rabbitmq:
+        condition: service_healthy
 
-  # Микросервисы (в Docker, подключаются к локальной БД)
+  # Auth Service
   auth-api:
     build:
       context: .
@@ -66,8 +65,8 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - fooddelivery-network
-    # Не пробрасываем порт наружу - общение только через API Gateway
 
+  # Order Service
   order-api:
     build:
       context: .
@@ -91,6 +90,7 @@ services:
     networks:
       - fooddelivery-network
 
+  # Payment Service
   payment-api:
     build:
       context: .
@@ -114,6 +114,7 @@ services:
     networks:
       - fooddelivery-network
 
+  # Delivery Service
   delivery-api:
     build:
       context: .
@@ -132,10 +133,22 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      order-api:
+        condition: service_started
+      payment-api:
+        condition: service_started
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - fooddelivery-network
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 60s
+    # ports:
+    #   - "8082:8080" # Для тестирования напрямую
 
 volumes:
   rabbitmq_data:

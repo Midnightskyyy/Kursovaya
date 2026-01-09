@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -95,10 +95,38 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Apply migrations
+// Apply migrations with detailed logging
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
-    db.Database.Migrate();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<PaymentDbContext>();
+
+        // Проверяем подключение к БД
+        Console.WriteLine("Checking database connection...");
+        var canConnect = dbContext.Database.CanConnect();
+        Console.WriteLine($"Database connection: {canConnect}");
+
+        if (!canConnect)
+        {
+            throw new Exception("Cannot connect to database");
+        }
+
+        // Создаем таблицы если их нет
+        Console.WriteLine("Creating database if not exists...");
+        dbContext.Database.EnsureCreated();
+
+        // Применяем миграции
+        Console.WriteLine("Applying migrations...");
+        dbContext.Database.Migrate();
+
+        Console.WriteLine("✅ Payment DB migrations applied successfully");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error applying Payment DB migrations: {ex.Message}");
+        Console.WriteLine($"Details: {ex}");
+    }
 }
 
 app.Run();

@@ -38,7 +38,6 @@ namespace Payment.API.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FailureReason")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -49,7 +48,6 @@ namespace Payment.API.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ProviderTransactionId")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 

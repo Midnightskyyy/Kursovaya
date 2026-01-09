@@ -33,21 +33,24 @@ namespace Delivery.API.Entities
         public Guid? CourierId { get; set; }
 
         [Required, MaxLength(50)]
-        public string Status { get; set; } = "Pending"; // Pending, Assigned, PickedUp, OnTheWay, Delivered, Cancelled
+        public string Status { get; set; } = "Pending"; // Pending, Preparing, PickingUp, OnTheWay, Delivered, Cancelled
 
         [Required, MaxLength(500)]
         public string DeliveryAddress { get; set; }
 
-        [MaxLength(500)]
-        public string PickupAddress { get; set; }
-
         public DateTime? EstimatedDeliveryTime { get; set; }
-        public DateTime? AssignedAt { get; set; }
-        public DateTime? PickedUpAt { get; set; }
-        public DateTime? DeliveredAt { get; set; }
 
         [Range(0, 300)]
-        public int? EstimatedDurationMinutes { get; set; } // Оценочное время доставки в минутах
+        public int EstimatedDurationMinutes { get; set; } // Оценочное время доставки в минутах
+
+        [Range(0, 180)]
+        public int PreparationTimeMinutes { get; set; } = 30; // Время приготовления
+
+        [Range(0, 180)]
+        public int DeliveryTimeMinutes { get; set; } = 15; // Время доставки
+
+        public DateTime? PreparationStartedAt { get; set; }
+        public DateTime? DeliveryStartedAt { get; set; }
 
         [MaxLength(1000)]
         public string Notes { get; set; }

@@ -44,15 +44,16 @@ namespace Payment.API.Services
         }
 
         public async Task<bool> ValidateCardAsync(string cardNumber, string cardHolderName,
-            int expiryMonth, int expiryYear, string cvv)
+    int expiryMonth, int expiryYear, string cvv)
         {
             try
             {
-                // Проверяем номер карты с помощью CreditCardValidator
-                var detector = new CreditCardDetector(cardNumber.Replace(" ", ""));
-                if (!detector.IsValid())
+                // УПРОЩЕННАЯ ВАЛИДАЦИЯ ДЛЯ ТЕСТОВОГО ПРИЛОЖЕНИЯ
+                // Просто проверяем, что есть какие-то данные
+
+                if (string.IsNullOrWhiteSpace(cardNumber) || cardNumber.Length < 13)
                 {
-                    _logger.LogWarning("Invalid card number: {CardNumber}", cardNumber);
+                    _logger.LogWarning("Invalid card number length: {Length}", cardNumber.Length);
                     return false;
                 }
 
@@ -65,14 +66,6 @@ namespace Payment.API.Services
                     return false;
                 }
 
-                // Проверяем CVV (3-4 цифры)
-                if (string.IsNullOrWhiteSpace(cvv) || !cvv.All(char.IsDigit) ||
-                    (cvv.Length != 3 && cvv.Length != 4))
-                {
-                    _logger.LogWarning("Invalid CVV: {Cvv}", cvv);
-                    return false;
-                }
-
                 // Проверяем имя держателя
                 if (string.IsNullOrWhiteSpace(cardHolderName) || cardHolderName.Length < 2)
                 {
@@ -80,7 +73,7 @@ namespace Payment.API.Services
                     return false;
                 }
 
-                return true;
+                return true; // Всегда true для демо, можно добавить простые проверки
             }
             catch (Exception ex)
             {
@@ -90,15 +83,18 @@ namespace Payment.API.Services
         }
 
         public async Task<Transaction> ProcessPaymentAsync(Guid orderId, Guid userId, decimal amount,
-            Guid? cardId = null, string cardToken = null)
+    Guid? cardId = null, string cardToken = null)
         {
             try
             {
+                _logger.LogInformation("Starting payment processing for order {OrderId}, user {UserId}", orderId, userId);
+
                 // Проверяем, нет ли уже транзакции для этого заказа
                 var existingTransaction = await _paymentRepository.GetTransactionByOrderIdAsync(orderId);
                 if (existingTransaction != null)
                 {
-                    _logger.LogWarning("Transaction already exists for order {OrderId}", orderId);
+                    _logger.LogInformation("Transaction already exists for order {OrderId}: {TransactionId}",
+                        orderId, existingTransaction.Id);
                     return existingTransaction;
                 }
 
@@ -109,15 +105,20 @@ namespace Payment.API.Services
                     UserId = userId,
                     Amount = amount,
                     Status = "Pending",
-                    CardId = cardId
+                    CardId = cardId,
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                await _paymentRepository.CreateTransactionAsync(transaction);
+                _logger.LogInformation("Created transaction object: {@Transaction}", transaction);
+
+                // Сохраняем транзакцию
+                var savedTransaction = await _paymentRepository.CreateTransactionAsync(transaction);
+                _logger.LogInformation("Transaction saved to database: {TransactionId}", savedTransaction.Id);
 
                 // Симуляция обработки платежа
-                await SimulatePaymentProcessingAsync(transaction);
+                await SimulatePaymentProcessingAsync(savedTransaction);
 
-                return transaction;
+                return savedTransaction;
             }
             catch (Exception ex)
             {

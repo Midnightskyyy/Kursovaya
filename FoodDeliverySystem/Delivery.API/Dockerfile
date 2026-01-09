@@ -1,4 +1,3 @@
-# Используем официальный образ .NET 8 SDK для сборки
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -25,13 +24,13 @@ RUN dotnet publish "Delivery.API.csproj" -c Release -o /app/publish /p:UseAppHos
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Устанавливаем инструменты для отладки (опционально)
+# Устанавливаем curl для health checks
 RUN apt-get update && apt-get install -y curl
 
 # Копируем собранное приложение
 COPY --from=publish /app/publish .
 
-# Открываем порт
+# Открываем порты
 EXPOSE 80
 EXPOSE 443
 

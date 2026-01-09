@@ -74,10 +74,10 @@
         </div>
 
         <div class="auth-image">
-            <alt="Food Delivery>
+            <img src="C:\Users\User\Desktop\education 5-6 sem\Backend\FoodDeliverySolution\Kursovaya\FoodDeliverySystem\fooddelivery-frontend\fooddelivery.jpg" alt="Food Delivery">
             <div class="image-overlay">
-                <h2>Добро пожаловать обратно!</h2>
-                <p>Быстрый доступ к вашим заказам и истории</p>
+                <div class="nme">Добро пожаловать обратно!</div>
+                <div class="nmm">Быстрый доступ к вашим заказам и истории</div>
             </div>
         </div>
     </div>
@@ -99,6 +99,28 @@
                 icon.className = 'fas fa-eye';
             }
         });
+
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

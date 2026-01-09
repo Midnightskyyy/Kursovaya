@@ -74,15 +74,10 @@
                         </button>
                     </div>
 
-                    <div class="cart-items" id="cartItems">
-                        <!-- Товары будут загружены через JS -->
-                        <div class="empty-cart" id="emptyCart">
-                            <i class="fas fa-shopping-cart"></i>
-                            <h3>Корзина пуста</h3>
-                            <p>Добавьте товары из меню</p>
-                            <a href="menu.html" class="btn btn-primary">Перейти в меню</a>
-                        </div>
-                    </div>
+                    <div class="cart-content" id="cartContent">
+    <!-- Если есть товары, здесь будет список товаров -->
+    <!-- Если нет товаров, здесь будет сообщение -->
+</div>
                 </div>
 
                 <!-- Правая колонка - итоги и оформление -->
@@ -107,26 +102,37 @@
                             <span class="total-amount" id="totalAmount">0 ₽</span>
                         </div>
 
-                        <div class="promo-code">
-                            <input type="text" id="promoCode" placeholder="Промокод">
-                            <button class="btn btn-outline" id="applyPromoBtn">Применить</button>
-                        </div>
 
                         <button class="btn btn-primary btn-block btn-large" id="checkoutBtn">
                             Перейти к оформлению
                         </button>
+                        <script>
+    document.getElementById('checkoutBtn').addEventListener('click', function(e) {
+        // Проверяем корзину перед переходом
+        ApiClient.getCart().then(response => {
+            if (response.success && response.data) {
+                const cartItems = response.data.cartItems || [];
+                if (cartItems.length === 0) {
+                    e.preventDefault();
+                    Utils.showNotification('Корзина пуста. Добавьте товары перед оформлением.', 'error');
+                } else {
+                    // Продолжаем переход
+                    window.location.href = 'checkout.html';
+                }
+            }
+        }).catch(() => {
+            e.preventDefault();
+            Utils.showNotification('Ошибка проверки корзины', 'error');
+        });
+    });
+</script>
 
                         <p class="summary-note">
                             <i class="fas fa-info-circle"></i>
                             Бесплатная доставка от 500 ₽
                         </p>
                     </div>
-
-                    <div class="delivery-info">
-                        <h3><i class="fas fa-truck"></i> Доставка</h3>
-                        <p>Среднее время доставки: 30-45 минут</p>
-                        <p>Минимальный заказ: 300 ₽</p>
-                    </div>
+                    
                 </div>
             </div>
         </main>
@@ -183,6 +189,27 @@
                 }
             });
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

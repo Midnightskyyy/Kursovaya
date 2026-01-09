@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои карты - Food Delivery</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header с навигацией -->
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>FoodDelivery</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="menu.html" class="nav-link">
+                        <i class="fas fa-utensils"></i> Меню
+                    </a>
+                    <a href="cart.html" class="nav-link cart-link">
+                        <i class="fas fa-shopping-cart"></i> Корзина
+                        <span class="cart-count" id="navCartCount">0</span>
+                    </a>
+                    <a href="orders.html" class="nav-link">
+                        <i class="fas fa-history"></i> Заказы
+                    </a>
+                    <a href="profile.html" class="nav-link">
+                        <i class="fas fa-user"></i> Профиль
+                    </a>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="menu.html" class="mobile-nav-link">
+                    <i class="fas fa-utensils"></i> Меню
+                </a>
+                <a href="cart.html" class="mobile-nav-link">
+                    <i class="fas fa-shopping-cart"></i> Корзина
+                </a>
+                <a href="orders.html" class="mobile-nav-link">
+                    <i class="fas fa-history"></i> Заказы
+                </a>
+                <a href="profile.html" class="mobile-nav-link">
+                    <i class="fas fa-user"></i> Профиль
+                </a>
+                <button class="btn btn-outline btn-block" id="mobileLogoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </header>
+
+        <main class="cards-page">
+            
+            <div class="page-header-with-back">
+                <div class="page-header-content">
+                    <h1><i class="fas fa-credit-card"></i> Мои карты</h1>
+                    <p>Управление сохраненными платежными картами</p>
+                </div>
+            </div>
+
+            <div class="cards-container">
+                <!-- Список сохраненных карт -->
+                <div class="cards-list-section">
+                    <h2>Сохраненные карты</h2>
+                    <div class="cards-list" id="savedCardsList">
+                        <!-- Карты будут загружены динамически -->
+                        <div class="loading-cards">
+                            <div class="spinner"></div>
+                            <p>Загружаем сохраненные карты...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cards-actions">
+                        <button class="btn btn-outline" id="addNewCardBtn">
+                            <i class="fas fa-plus"></i> Добавить новую карту
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Информация о безопасности -->
+                <div class="security-info">
+                    <h3><i class="fas fa-shield-alt"></i> Безопасность</h3>
+                    <div class="security-points">
+                        <p><i class="fas fa-check-circle"></i> Данные карт надежно зашифрованы</p>
+                        <p><i class="fas fa-check-circle"></i> CVV код никогда не сохраняется</p>
+                        <p><i class="fas fa-check-circle"></i> Все платежи защищены</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/cards.js"></script>
+    <script src="js/checkout.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            
+            // Инициализация мобильного меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const mobileMenu = document.getElementById('mobileMenu');
+                mobileMenu.classList.toggle('active');
+            });
+
+            // Выход
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('mobileLogoutBtn').addEventListener('click', logout);
+            
+            // Обновление счетчика корзины
+            updateCartCount();
+            
+            // Загружаем карты пользователя
+            loadUserCards();
+            
+            // Кнопка добавления новой карты
+            document.getElementById('addNewCardBtn').addEventListener('click', function() {
+                alert('Добавить новую карту можно при оформлении следующего заказа');
+                window.location.href = 'menu.html';
+            });
+        });
+    </script>
+</body>
+</html>

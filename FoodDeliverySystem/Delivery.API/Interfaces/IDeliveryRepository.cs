@@ -7,10 +7,10 @@ namespace Delivery.API.Interfaces
         // Курьеры
         Task<IEnumerable<Courier>> GetAvailableCouriersAsync();
         Task<Courier> GetCourierAsync(Guid courierId);
-        Task<Courier> AssignCourierAsync(Guid deliveryId);
+        Task<Courier> AssignCourierToDeliveryAsync(Guid deliveryId);
 
         // Доставки
-        Task<DeliveryEntity> GetDeliveryAsync(Guid deliveryId);
+        Task<DeliveryEntity> GetDeliveryAsync(Guid deliveryId); // <-- ЭТОТ МЕТОД ДОЛЖЕН БЫТЬ
         Task<DeliveryEntity> GetDeliveryByOrderIdAsync(Guid orderId);
         Task<DeliveryEntity> CreateDeliveryAsync(DeliveryEntity delivery);
         Task UpdateDeliveryStatusAsync(Guid deliveryId, string status);

@@ -10,28 +10,58 @@ class CartManager {
 
     // Загрузка корзины
     async loadCart() {
-        try {
-            const response = await ApiClient.getCart();
+    try {
+        // Блокируем повторные вызовы
+        if (this.isLoading) return;
+        this.isLoading = true;
+        
+        const response = await ApiClient.getCart();
+        console.log('Cart API Response:', response);
 
-            if (response.success) {
-                this.cart = response.data?.cartItems || [];
-                this.cart.forEach(item => {
-                    // Добавляем информацию о блюде, если её нет
-                    if (item.dish && !item.dish.imageUrl) {
-                        item.dish.imageUrl = 'images/dishes/default.jpg';
-                    }
-                });
-                this.updateCartDisplay();
-            } else {
-                throw new Error(response.message);
+        if (response.success && response.data) {
+            // Очищаем текущую корзину
+            this.cart = [];
+            
+            // Используем cartItems из data
+            if (response.data.cartItems && Array.isArray(response.data.cartItems)) {
+                this.cart = response.data.cartItems;
+            } else if (Array.isArray(response.data)) {
+                this.cart = response.data;
             }
-        } catch (error) {
-            console.error('Error loading cart:', error);
-
-            // Fallback на локальную корзину
-            this.cart = ApiClient.getLocalCart();
+            
+            // Обновляем счетчик
+            updateCartCountGlobal();
+            
+            // Обновляем отображение
+            this.updateCartDisplay();
+        } else {
+            console.warn('Cart response not successful:', response);
+            this.cart = [];
+            updateCartCountGlobal();
             this.updateCartDisplay();
         }
+    } catch (error) {
+        console.error('Error loading cart:', error);
+        this.cart = [];
+        updateCartCountGlobal();
+        this.updateCartDisplay();
+    } finally {
+        this.isLoading = false;
+    }
+}
+
+    calculateDeliveryTime() {
+    if (this.cart.length === 0) return 30; // базовое время
+
+    // Находим блюдо с максимальным временем приготовления
+    let maxPrepTime = 0;
+    this.cart.forEach(item => {
+        const prepTime = item.dish.preparationTime || 15;
+        maxPrepTime = Math.max(maxPrepTime, prepTime);
+    });
+
+    // Базовое время доставки + время приготовления самого долгого блюда
+    return maxPrepTime + 15; // 15 минут на доставку
     }
 
     // Обновление отображения корзины
@@ -44,73 +74,110 @@ class CartManager {
 
     // Расчет итогов
     calculateTotals() {
-        // Сумма товаров
-        this.cartTotal = ApiClient.calculateCartTotal(this.cart);
+    // Сумма товаров
+    this.cartTotal = ApiClient.calculateCartTotal(this.cart);
 
-        // Стоимость доставки (бесплатно от 500 руб)
-        this.deliveryCost = this.cartTotal >= 500 ? 0 : 150;
+    // Стоимость доставки (бесплатно от 500 руб)
+    this.deliveryCost = this.cartTotal >= 500 ? 0 : 150;
 
-        // Проверка минимального заказа
-        if (this.cartTotal > 0 && this.cartTotal < this.minimumOrder) {
-            this.showMinimumOrderWarning();
-        }
+    // Время доставки
+    this.deliveryTime = this.calculateDeliveryTime();
+
+    // Обновляем отображение времени доставки
+    const deliveryTimeElement = document.getElementById('deliveryTime');
+    if (deliveryTimeElement) {
+        deliveryTimeElement.textContent = `${this.deliveryTime} минут`;
+    }
+
+    // Проверка минимального заказа
+    if (this.cartTotal > 0 && this.cartTotal < this.minimumOrder) {
+        this.showMinimumOrderWarning();
+    }
     }
 
     // Отображение товаров в корзине
     renderCartItems() {
-        const container = document.getElementById('cartItems');
-        if (!container) return;
-
-        if (this.cart.length === 0) {
-            document.getElementById('emptyCart').style.display = 'block';
-            container.innerHTML = '';
-            return;
-        }
-
-        document.getElementById('emptyCart').style.display = 'none';
-
-        container.innerHTML = this.cart.map(item => `
-            <div class="cart-item" data-id="${item.id}">
-                <div class="cart-item-image">
-                    <img src="${item.dish.imageUrl || 'images/dishes/default.jpg'}" 
-                         alt="${item.dish.name}"
-                         onerror="this.src='images/dishes/default.jpg'">
-                </div>
-                <div class="cart-item-info">
-                    <div class="cart-item-header">
-                        <div class="cart-item-title">
-                            <h4>${item.dish.name}</h4>
-                            <p class="cart-item-description">${item.dish.description || ''}</p>
-                        </div>
-                        <div class="cart-item-price">
-                            ${Utils.formatPrice(item.dish.price * item.quantity)}
-                        </div>
-                    </div>
+    const cartContent = document.getElementById('cartContent');
+    const hasItems = this.cart && this.cart.length > 0;
+    
+    if (hasItems) {
+        // Рендерим список товаров
+        cartContent.innerHTML = `
+            <div class="cart-items">
+                ${this.cart.map(item => {
+                    const dish = item.dish || {};
+                    const imageUrl = dish.imageUrl || 'https://via.placeholder.com/100x100?text=Dish';
+                    const price = dish.price || 0;
+                    const totalPrice = price * item.quantity;
                     
-                    <div class="cart-item-actions">
-                        <div class="quantity-control">
-                            <button class="quantity-btn minus">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <span class="quantity-value">${item.quantity}</span>
-                            <button class="quantity-btn plus">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    return `
+                        <div class="cart-item" data-id="${item.id}">
+                            <div class="cart-item-image">
+                                <img src="${imageUrl}" 
+                                     alt="${dish.name || 'Блюдо'}"
+                                     onerror="this.src='https://via.placeholder.com/100x100?text=Dish'">
+                            </div>
+                            <div class="cart-item-info">
+                                <div class="cart-item-header">
+                                    <div class="cart-item-title">
+                                        <h4>${dish.name || 'Неизвестное блюдо'}</h4>
+                                        <p class="cart-item-description">${dish.description || ''}</p>
+                                    </div>
+                                    <div class="cart-item-price">
+                                        ${Utils.formatPrice(totalPrice)}
+                                    </div>
+                                </div>
+                                
+                                <div class="cart-item-actions">
+                                    <div class="quantity-control">
+                                        <button type="button" class="quantity-btn minus" data-item-id="${item.id}">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="quantity-value" id="quantity-${item.id}">${item.quantity}</span>
+                                        <button type="button" class="quantity-btn plus" data-item-id="${item.id}">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    <button type="button" class="remove-item-btn" data-item-id="${item.id}">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <button class="remove-item-btn">
-                            <i class="fas fa-trash"></i> Удалить
-                        </button>
-                    </div>
-                </div>
+                    `;
+                }).join('')}
             </div>
-        `).join('');
-
-        // Добавляем обработчики
+        `;
+        
         this.addCartEventListeners();
+        
+        // Обновляем кнопку очистки
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        if (clearCartBtn) {
+            clearCartBtn.style.display = 'inline-flex';
+        }
+        
+    } else {
+        // Рендерим сообщение о пустой корзине
+        cartContent.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart fa-3x"></i>
+                <h3>Корзина пуста</h3>
+                <p>Добавьте товары из меню</p>
+                <a href="menu.html" class="btn btn-primary">Перейти в меню</a>
+            </div>
+        `;
+        
+        // Скрываем кнопку очистки
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        if (clearCartBtn) {
+            clearCartBtn.style.display = 'none';
+        }
     }
-
+}
     // Обновление итоговой информации
-    updateSummary() {
+updateSummary() {
+    try {
         const subtotal = document.getElementById('subtotal');
         const deliveryCost = document.getElementById('deliveryCost');
         const totalAmount = document.getElementById('totalAmount');
@@ -132,55 +199,101 @@ class CartManager {
             checkoutBtn.style.opacity = canCheckout ? '1' : '0.5';
             checkoutBtn.style.cursor = canCheckout ? 'pointer' : 'not-allowed';
         }
+    } catch (error) {
+        console.error('Error updating summary:', error);
+    }
     }
 
     // Добавление обработчиков событий
     addCartEventListeners() {
-        // Кнопки изменения количества
-        document.querySelectorAll('.quantity-btn.minus').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const itemId = e.target.closest('.cart-item').dataset.id;
-                const item = this.cart.find(i => i.id === itemId);
-                if (item && item.quantity > 1) {
+    // Используем делегирование и флаг для предотвращения множественных кликов
+    document.addEventListener('click', async (e) => {
+        // Проверяем, не обрабатываем ли мы уже клик
+        if (window.isProcessingCartClick) return;
+        
+        const target = e.target;
+        
+        // Кнопка "минус"
+        if (target.closest('.quantity-btn.minus')) {
+            window.isProcessingCartClick = true;
+            const button = target.closest('.quantity-btn.minus');
+            const itemId = button.dataset.itemId;
+            const item = this.cart.find(i => i.id === itemId);
+            
+            if (item) {
+                if (item.quantity > 1) {
                     await this.updateQuantity(itemId, item.quantity - 1);
+                } else {
+                    await this.removeItem(itemId);
                 }
-            });
-        });
-
-        document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const itemId = e.target.closest('.cart-item').dataset.id;
-                const item = this.cart.find(i => i.id === itemId);
-                if (item) {
-                    await this.updateQuantity(itemId, item.quantity + 1);
-                }
-            });
-        });
-
-        // Кнопки удаления
-        document.querySelectorAll('.remove-item-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const itemId = e.target.closest('.cart-item').dataset.id;
-                await this.removeItem(itemId);
-            });
-        });
-    }
+            }
+            window.isProcessingCartClick = false;
+        }
+        
+        // Кнопка "плюс"
+        if (target.closest('.quantity-btn.plus')) {
+            window.isProcessingCartClick = true;
+            const button = target.closest('.quantity-btn.plus');
+            const itemId = button.dataset.itemId;
+            const item = this.cart.find(i => i.id === itemId);
+            
+            if (item) {
+                await this.updateQuantity(itemId, item.quantity + 1);
+            }
+            window.isProcessingCartClick = false;
+        }
+        
+        // Кнопка удаления
+        if (target.closest('.remove-item-btn')) {
+            window.isProcessingCartClick = true;
+            const button = target.closest('.remove-item-btn');
+            const itemId = button.dataset.itemId;
+            await this.removeItem(itemId);
+            window.isProcessingCartClick = false;
+        }
+    });
+}
 
     // Обновление количества товара
     async updateQuantity(itemId, newQuantity) {
-        try {
-            await ApiClient.updateCartItem(itemId, newQuantity);
-            await this.loadCart();
-            Utils.showNotification('Корзина обновлена', 'success');
-        } catch (error) {
-            console.error('Error updating cart item:', error);
-
-            // Fallback на локальную корзину
-            ApiClient.updateLocalCartItem(itemId, newQuantity);
-            await this.loadCart();
-            Utils.showNotification('Корзина обновлена', 'success');
+    try {
+        // Находим товар в корзине
+        const itemIndex = this.cart.findIndex(i => i.id === itemId);
+        if (itemIndex === -1) {
+            console.error('Item not found in cart:', itemId);
+            await this.loadCart(); // Перезагружаем корзину
+            return;
         }
+        
+        // Обновляем локально для мгновенной обратной связи
+        const oldQuantity = this.cart[itemIndex].quantity;
+        this.cart[itemIndex].quantity = newQuantity;
+        
+        // Обновляем отображение
+        const quantityElement = document.getElementById(`quantity-${itemId}`);
+        if (quantityElement) {
+            quantityElement.textContent = newQuantity;
+        }
+        
+        // Пересчитываем итоги
+        this.calculateTotals();
+        this.updateSummary();
+        updateCartCountGlobal();
+        
+        // Отправляем обновление на сервер
+        await ApiClient.updateCartItem(itemId, newQuantity);
+        
+        Utils.showNotification('Количество обновлено', 'success');
+        
+    } catch (error) {
+        console.error('Error updating cart item:', error);
+        
+        // Если ошибка, перезагружаем корзину с сервера
+        await this.loadCart();
+        
+        Utils.showNotification('Ошибка обновления количества', 'error');
     }
+}
 
     // Удаление товара
     async removeItem(itemId) {
@@ -228,12 +341,6 @@ class CartManager {
             return;
         }
 
-        // Заглушка для проверки промокодов
-        const validPromoCodes = {
-            'WELCOME10': 0.1,   // 10% скидка
-            'FREE150': 150,     // 150 руб скидки
-            'DELIVERYFREE': 'free-delivery' // Бесплатная доставка
-        };
 
         if (validPromoCodes[promoCode]) {
             const discount = validPromoCodes[promoCode];

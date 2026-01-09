@@ -94,11 +94,7 @@ class OrdersManager {
                     <button class="btn btn-text btn-sm view-order-btn" data-id="${order.id}">
                         <i class="fas fa-eye"></i> Подробнее
                     </button>
-                    ${order.status === 'Delivered' ? `
-                        <button class="btn btn-text btn-sm repeat-order-btn" data-id="${order.id}">
-                            <i class="fas fa-redo"></i> Повторить
-                        </button>
-                    ` : ''}
+                    
                 </div>
             </div>
         `).join('');
@@ -109,38 +105,40 @@ class OrdersManager {
 
     // Фильтрация заказов
     filterOrders(filter) {
-        this.currentFilter = filter;
-        this.currentPage = 1;
+    this.currentFilter = filter;
+    this.currentPage = 1;
 
-        switch (filter) {
-            case 'active':
-                this.filteredOrders = this.orders.filter(order =>
-                    order.status !== 'Delivered' && order.status !== 'Cancelled'
-                );
-                break;
-            case 'delivered':
-                this.filteredOrders = this.orders.filter(order =>
-                    order.status === 'Delivered'
-                );
-                break;
-            case 'cancelled':
-                this.filteredOrders = this.orders.filter(order =>
-                    order.status === 'Cancelled'
-                );
-                break;
-            case 'all':
-            default:
-                this.filteredOrders = [...this.orders];
-                break;
-        }
-
-        this.displayOrders();
-        this.updatePagination();
-
-        if (this.filteredOrders.length === 0) {
-            this.showNoOrders();
-        }
+    switch (filter) {
+        case 'active':
+            this.filteredOrders = this.orders.filter(order =>
+                order.status === 'Preparing' || 
+                order.status === 'PickingUp' || 
+                order.status === 'OnTheWay'
+            );
+            break;
+        case 'delivered':
+            this.filteredOrders = this.orders.filter(order =>
+                order.status === 'Delivered'
+            );
+            break;
+        case 'cancelled':
+            this.filteredOrders = this.orders.filter(order =>
+                order.status === 'Cancelled'
+            );
+            break;
+        case 'all':
+        default:
+            this.filteredOrders = [...this.orders];
+            break;
     }
+
+    this.displayOrders();
+    this.updatePagination();
+
+    if (this.filteredOrders.length === 0) {
+        this.showNoOrders();
+    }
+}
 
     // Поиск заказов
     searchOrders() {
@@ -377,21 +375,7 @@ class OrdersManager {
                         </div>
                     </div>
                     
-                    ${order.status === 'Delivered' ? `
-                        <div class="detail-section">
-                            <h3><i class="fas fa-star"></i> Оцените заказ</h3>
-                            <div class="order-rating">
-                                <div class="stars">
-                                    ${[1, 2, 3, 4, 5].map(i => `
-                                        <i class="fas fa-star" data-rating="${i}"></i>
-                                    `).join('')}
-                                </div>
-                                <button class="btn btn-outline submit-rating-btn">
-                                    Оценить
-                                </button>
-                            </div>
-                        </div>
-                    ` : ''}
+                    
                 </div>
                 
                 <div class="order-details-actions">
@@ -444,10 +428,6 @@ class OrdersManager {
                 });
             });
 
-            // Сброс рейтинга при уходе мыши
-            modalBody.querySelector('.stars').addEventListener('mouseleave', () => {
-                this.updateStars(stars, selectedRating);
-            });
 
             // Отправка рейтинга
             const submitBtn = modalBody.querySelector('.submit-rating-btn');
@@ -497,28 +477,6 @@ class OrdersManager {
         }
     }
 
-    // Повтор заказа
-    async repeatOrder(orderId) {
-        try {
-            const response = await ApiClient.getOrder(orderId);
-
-            if (response.success) {
-                const order = response.data;
-
-                // В реальном приложении здесь будет логика добавления товаров в корзину
-                // Для демонстрации показываем уведомление
-                Utils.showNotification('Товары из заказа добавлены в корзину', 'success');
-
-                // Перенаправляем в корзину
-                setTimeout(() => {
-                    window.location.href = 'cart.html';
-                }, 1500);
-            }
-        } catch (error) {
-            console.error('Error repeating order:', error);
-            Utils.showNotification('Не удалось повторить заказ', 'error');
-        }
-    }
 
     // Показ сообщения об отсутствии заказов
     showNoOrders() {
@@ -529,31 +487,29 @@ class OrdersManager {
 
     // Получение текста статуса
     getStatusText(status) {
-        const statusMap = {
-            'Pending': 'Ожидает подтверждения',
-            'Cooking': 'Готовится',
-            'ReadyForPickup': 'Готов к выдаче',
-            'OnDelivery': 'В доставке',
-            'Delivered': 'Доставлен',
-            'Cancelled': 'Отменен'
-        };
+    const statusMap = {
+        'Preparing': 'Готовится',
+        'PickingUp': 'Ожидает курьера',
+        'OnTheWay': 'В пути',
+        'Delivered': 'Доставлен',
+        'Cancelled': 'Отменен'
+    };
 
-        return statusMap[status] || status;
-    }
+    return statusMap[status] || status;
+}
 
     // Получение класса статуса
     getStatusClass(status) {
-        const classMap = {
-            'Pending': 'status-pending',
-            'Cooking': 'status-cooking',
-            'ReadyForPickup': 'status-ready',
-            'OnDelivery': 'status-ontheway',
-            'Delivered': 'status-delivered',
-            'Cancelled': 'status-cancelled'
-        };
+    const classMap = {
+        'Preparing': 'status-preparing',
+        'PickingUp': 'status-pickingup',
+        'OnTheWay': 'status-ontheway',
+        'Delivered': 'status-delivered',
+        'Cancelled': 'status-cancelled'
+    };
 
-        return classMap[status] || 'status-pending';
-    }
+    return classMap[status] || 'status-preparing';
+}
 
     // Заглушка заказов для тестирования
     loadMockOrders() {

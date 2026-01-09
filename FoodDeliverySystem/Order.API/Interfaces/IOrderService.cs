@@ -8,7 +8,9 @@ namespace Order.API.Interfaces
     {
         Task<OrderEntity> CreateOrderAsync(Guid userId, CreateOrderRequest request);
         Task<bool> CancelOrderAsync(Guid orderId, Guid userId);
+        
         Task<decimal> CalculateOrderTotalAsync(Guid userId);
         Task ValidateOrderAsync(Guid userId);
+        Task<bool> UpdateOrderStatusAsync(Guid orderId, string status);
     }
 }

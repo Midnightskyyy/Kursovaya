@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Order.API.Entities;
 using Order.API.Interfaces;
 using Shared.Core.Models;
 using System.ComponentModel.DataAnnotations;
@@ -29,64 +30,72 @@ namespace Order.API.Controllers
                 var userId = GetUserId();
                 var cart = await _orderRepository.GetCartAsync(userId);
 
-                if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
+                _logger.LogInformation("GetCart: UserId={UserId}, CartExists={CartExists}, ItemsCount={ItemsCount}",
+                    userId, cart != null, cart?.CartItems?.Count ?? 0);
+
+                if (cart == null)
                 {
                     return Ok(ApiResponse.Ok(new
                     {
-                        Items = new List<object>(),
-                        Restaurants = new List<object>(),
-                        TotalAmount = 0
+                        cartItems = new List<object>(),
+                        itemCount = 0,
+                        totalAmount = 0
                     }));
                 }
 
-                // Группируем товары по ресторанам
-                var itemsByRestaurant = cart.CartItems
-                    .GroupBy(ci => ci.RestaurantId)
-                    .Select(g => new
-                    {
-                        RestaurantId = g.Key,
-                        RestaurantName = g.First().Dish?.Restaurant?.Name ?? "Unknown Restaurant",
-                        Items = g.Select(ci => new
-                        {
-                            ci.Id,
-                            ci.DishId,
-                            DishName = ci.Dish?.Name ?? "Unknown",
-                            ci.Quantity,
-                            UnitPrice = ci.Dish?.Price ?? 0,
-                            Total = (ci.Dish?.Price ?? 0) * ci.Quantity,
-                            PreparationTime = ci.Dish?.PreparationTime ?? 15
-                        }).ToList(),
-                        RestaurantTotal = g.Sum(ci => (ci.Dish?.Price ?? 0) * ci.Quantity),
-                        MaxPreparationTime = g.Max(ci => ci.Dish?.PreparationTime ?? 15)
-                    }).ToList();
+                // Вычисляем общее количество товаров
+                var itemCount = cart.CartItems?.Sum(item => item.Quantity) ?? 0;
+                var totalAmount = 0m;
 
-                var response = new
+                var cartItemsDto = new List<object>();
+
+                if (cart.CartItems != null)
                 {
-                    CartId = cart.Id,
-                    Items = cart.CartItems.Select(ci => new
+                    foreach (var item in cart.CartItems)
                     {
-                        ci.Id,
-                        ci.DishId,
-                        ci.RestaurantId,
-                        RestaurantName = ci.Dish?.Restaurant?.Name ?? "Unknown",
-                        DishName = ci.Dish?.Name ?? "Unknown",
-                        ci.Quantity,
-                        UnitPrice = ci.Dish?.Price ?? 0,
-                        Total = (ci.Dish?.Price ?? 0) * ci.Quantity,
-                        PreparationTime = ci.Dish?.PreparationTime ?? 15
-                    }).ToList(),
-                    GroupedByRestaurant = itemsByRestaurant,
-                    TotalAmount = cart.CartItems.Sum(ci => (ci.Dish?.Price ?? 0) * ci.Quantity),
-                    // Время доставки = максимальное время приготовления + 30 минут на доставку
-                    EstimatedDeliveryTime = itemsByRestaurant.Any() ?
-                        itemsByRestaurant.Max(r => r.MaxPreparationTime) + 30 : 45
+                        var dishPrice = item.Dish?.Price ?? 0;
+                        totalAmount += dishPrice * item.Quantity;
+
+                        cartItemsDto.Add(new
+                        {
+                            item.Id,
+                            item.CartId,
+                            item.DishId,
+                            item.Quantity,
+                            item.RestaurantId,
+                            Dish = item.Dish != null ? new
+                            {
+                                item.Dish.Id,
+                                item.Dish.Name,
+                                item.Dish.Description,
+                                item.Dish.Price,
+                                ImageUrl = item.Dish.ImageUrl ?? "https://via.placeholder.com/100x100?text=Dish",
+                                item.Dish.Category,
+                                Restaurant = item.Dish.Restaurant != null ? new
+                                {
+                                    item.Dish.Restaurant.Id,
+                                    item.Dish.Restaurant.Name
+                                } : null
+                            } : null,
+                            ItemTotal = dishPrice * item.Quantity
+                        });
+                    }
+                }
+
+                var cartDto = new
+                {
+                    cart.Id,
+                    cart.UserId,
+                    cartItems = cartItemsDto,
+                    itemCount,
+                    totalAmount
                 };
 
-                return Ok(ApiResponse.Ok(response));
+                return Ok(ApiResponse.Ok(cartDto));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting cart");
+                _logger.LogError(ex, "Error getting cart for user");
                 return StatusCode(500, ApiResponse.Fail("Internal server error"));
             }
         }
@@ -97,8 +106,40 @@ namespace Order.API.Controllers
             try
             {
                 var userId = GetUserId();
+                _logger.LogInformation("AddToCart: UserId={UserId}, DishId={DishId}, Quantity={Quantity}",
+                    userId, request.DishId, request.Quantity);
+
                 await _orderRepository.AddToCartAsync(userId, request.DishId, request.Quantity);
-                return Ok(ApiResponse.Ok(null, "Item added to cart"));
+
+                // Получаем обновленную корзину для ответа
+                var cart = await _orderRepository.GetCartAsync(userId);
+
+                _logger.LogInformation("Item added to cart successfully. Cart items count: {Count}",
+                    cart?.CartItems?.Count ?? 0);
+
+                return Ok(ApiResponse.Ok(new
+                {
+                    cartItems = cart?.CartItems?.Select(ci => new
+                    {
+                        ci.Id,
+                        ci.DishId,
+                        ci.Quantity,
+                        ci.RestaurantId,
+                        Dish = ci.Dish != null ? new
+                        {
+                            ci.Dish.Id,
+                            ci.Dish.Name,
+                            ci.Dish.Price,
+                            ci.Dish.ImageUrl
+                        } : null
+                    }),
+                    totalItems = cart?.CartItems?.Sum(ci => ci.Quantity) ?? 0
+                }, "Item added to cart"));
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Bad request in AddToCart");
+                return BadRequest(ApiResponse.Fail(ex.Message));
             }
             catch (Exception ex)
             {

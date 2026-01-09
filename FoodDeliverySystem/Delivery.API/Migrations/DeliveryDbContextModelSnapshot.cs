@@ -32,7 +32,9 @@ namespace Delivery.API.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsAvailable")
-                        .HasColumnType("boolean");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -48,7 +50,9 @@ namespace Delivery.API.Migrations
                         .HasColumnType("decimal(3,2)");
 
                     b.Property<int>("TotalDeliveries")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -75,16 +79,10 @@ namespace Delivery.API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("AssignedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid?>("CourierId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeliveredAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("DeliveryAddress")
@@ -92,11 +90,19 @@ namespace Delivery.API.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<DateTime?>("DeliveryStartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("DeliveryTimeMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("EstimatedDeliveryTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("EstimatedDurationMinutes")
-                        .HasColumnType("integer");
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(45);
 
                     b.Property<string>("Notes")
                         .IsRequired()
@@ -106,13 +112,11 @@ namespace Delivery.API.Migrations
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("PickedUpAt")
+                    b.Property<DateTime?>("PreparationStartedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("PickupAddress")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                    b.Property<int>("PreparationTimeMinutes")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -125,9 +129,6 @@ namespace Delivery.API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourierId");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
 
                     b.ToTable("Deliveries");
                 });

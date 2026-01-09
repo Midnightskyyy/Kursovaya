@@ -17,9 +17,16 @@ namespace Payment.API.Repositories
         public async Task<IEnumerable<UserCard>> GetUserCardsAsync(Guid userId)
         {
             return await _context.UserCards
-                .Where(c => c.UserId == userId && c.IsActive)
-                .OrderByDescending(c => c.CreatedAt)
+                .Where(c => c.UserId == userId)
+                .OrderByDescending(c => c.IsActive) // Сначала активные
+                .ThenByDescending(c => c.CreatedAt) // Затем новые
                 .ToListAsync();
+        }
+
+        public async Task<UserCard> GetUserDefaultCardAsync(Guid userId)
+        {
+            return await _context.UserCards
+                .FirstOrDefaultAsync(c => c.UserId == userId && c.IsActive);
         }
 
         public async Task<UserCard> GetCardAsync(Guid cardId, Guid userId)

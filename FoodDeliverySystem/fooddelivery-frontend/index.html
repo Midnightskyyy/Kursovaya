@@ -103,6 +103,27 @@
                 });
             }
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

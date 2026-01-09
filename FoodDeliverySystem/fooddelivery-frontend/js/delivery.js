@@ -1,5 +1,5 @@
-﻿// Логика отслеживания доставки
-
+// Логика отслеживания доставки
+const { DateTime } = luxon;
 class DeliveryManager {
     constructor() {
         this.orders = [];
@@ -57,33 +57,61 @@ class DeliveryManager {
 
     // Отслеживание заказа
     async trackOrder(orderId) {
-        try {
-            // Получаем статус доставки
-            const deliveryResponse = await ApiClient.getDeliveryStatus(orderId);
+    try {
+        // Получаем статус доставки со всей информацией
+        const deliveryResponse = await ApiClient.getDeliveryStatus(orderId);
 
-            if (deliveryResponse.success && deliveryResponse.data) {
-                this.deliveryStatus = deliveryResponse.data;
-                this.currentOrder = this.orders.find(o => o.id === orderId);
+        if (deliveryResponse.success && deliveryResponse.data) {
+            this.deliveryStatus = deliveryResponse.data;
+            this.currentOrder = this.orders.find(o => o.id === orderId);
 
-                // Получаем информацию о курьере
-                if (this.deliveryStatus.courierId) {
-                    await this.loadCourierInfo(this.deliveryStatus.courierId);
-                }
+            // Теперь deliveryStatus содержит все нужные поля:
+            // totalMinutes, preparationMinutes, deliveryMinutes, remainingMinutes и т.д.
+            console.log('📊 API Response:', {
+                totalMinutes: this.deliveryStatus.totalMinutes,
+                preparationMinutes: this.deliveryStatus.preparationMinutes,
+                deliveryMinutes: this.deliveryStatus.deliveryMinutes,
+                estimatedDurationMinutes: this.deliveryStatus.estimatedDurationMinutes,
+                status: this.deliveryStatus.status,
+                preparationTimeMinutes: this.deliveryStatus.preparationTimeMinutes,
+                deliveryTimeMinutes: this.deliveryStatus.deliveryTimeMinutes
+            });
+            
 
-                this.updateDeliveryDisplay();
-                this.showDeliveryCard();
-            } else {
-                // Если доставка еще не создана, показываем статус заказа
-                this.currentOrder = this.orders.find(o => o.id === orderId);
-                this.updateOrderStatusDisplay();
-                this.showDeliveryCard();
+            if (this.deliveryStatus.preparationTimeMinutes !== undefined) {
+                this.deliveryStatus.preparationMinutes = this.deliveryStatus.preparationTimeMinutes;
             }
+            if (this.deliveryStatus.deliveryTimeMinutes !== undefined) {
+                this.deliveryStatus.deliveryMinutes = this.deliveryStatus.deliveryTimeMinutes;
+            }
+            if (this.deliveryStatus.estimatedDurationMinutes !== undefined) {
+                this.deliveryStatus.totalMinutes = this.deliveryStatus.estimatedDurationMinutes;
+            }
+            // Отображаем информацию
 
-        } catch (error) {
-            console.error('Error tracking order:', error);
-            Utils.showNotification('Не удалось загрузить информацию о доставке', 'error');
+
+            this.updateDeliveryDisplay();
+            this.updateDeliveryTimer();
+            this.updateCourierInfo();
+            this.updateTimeline();
+
+            this.showDeliveryCard();
+            
+            // Запускаем обновление таймера
+            this.startTimerUpdates();
+
+        } else {
+            this.currentOrder = this.orders.find(o => o.id === orderId);
+            this.updateOrderStatusDisplay();
+            this.showDeliveryCard();
         }
+
+    } catch (error) {
+        console.error('Error tracking order:', error);
+        Utils.showNotification('Не удалось загрузить информацию о доставке', 'error');
     }
+}
+
 
     // Загрузка информации о курьере
     async loadCourierInfo(courierId) {
@@ -114,14 +142,16 @@ class DeliveryManager {
 
         // Статус
         const statusElement = document.getElementById('deliveryStatus');
-        const statusMap = {
-            'Pending': { text: 'Ожидает подтверждения', class: 'status-pending' },
-            'Assigned': { text: 'Курьер назначен', class: 'status-assigned' },
-            'PickedUp': { text: 'Заказ забран', class: 'status-pickedup' },
-            'OnTheWay': { text: 'В пути', class: 'status-ontheway' },
-            'Delivered': { text: 'Доставлен', class: 'status-delivered' },
-            'Cancelled': { text: 'Отменен', class: 'status-cancelled' }
-        };
+         const statusMap = {
+        'Pending': { text: 'Ожидает подтверждения', class: 'status-pending' },
+        'Preparing': { text: 'Готовится', class: 'status-preparing' }, // ДОБАВЛЕНО
+        'Assigned': { text: 'Курьер назначен', class: 'status-assigned' },
+        'PickedUp': { text: 'Заказ забран', class: 'status-pickedup' },
+        'OnTheWay': { text: 'В пути', class: 'status-ontheway' },
+        'Delivered': { text: 'Доставлен', class: 'status-delivered' },
+        'Cancelled': { text: 'Отменен', class: 'status-cancelled' },
+        'ReadyForPickup': { text: 'Готов к выдаче', class: 'status-ready' }
+    };
 
         const statusInfo = statusMap[this.deliveryStatus.status] || { text: this.deliveryStatus.status, class: 'status-pending' };
         statusElement.textContent = statusInfo.text;
@@ -146,6 +176,7 @@ class DeliveryManager {
 
         const statusMap = {
             'Pending': { text: 'Ожидает подтверждения', class: 'status-pending' },
+            'Preparing': { text: 'Готовится', class: 'status-preparing' },
             'Cooking': { text: 'Готовится', class: 'status-cooking' },
             'ReadyForPickup': { text: 'Готов к выдаче', class: 'status-ready' },
             'OnDelivery': { text: 'В доставке', class: 'status-ontheway' },
@@ -166,66 +197,430 @@ class DeliveryManager {
 
     // Обновление timeline доставки
     updateTimeline() {
-        if (!this.deliveryStatus) return;
+    if (!this.deliveryStatus) return;
 
-        const timelineSteps = [
-            { id: 'step1', time: this.deliveryStatus.createdAt, label: 'Заказ принят' },
-            { id: 'step2', time: null, label: 'Готовится' },
-            { id: 'step3', time: this.deliveryStatus.assignedAt, label: 'Передан курьеру' },
-            { id: 'step4', time: this.deliveryStatus.pickedUpAt, label: 'В пути' },
-            { id: 'step5', time: this.deliveryStatus.deliveredAt, label: 'Доставлен' }
-        ];
+    const timelineSteps = [
+        { id: 'step1', time: this.deliveryStatus.createdAt, label: 'Заказ принят' },
+        { id: 'step2', time: this.deliveryStatus.preparationStartedAt, label: 'Готовится' },
+        { id: 'step3', time: this.deliveryStatus.pickedUpAt, label: 'Ожидает курьера' },
+        { id: 'step4', time: this.deliveryStatus.deliveryStartedAt, label: 'В пути' },
+        { id: 'step5', time: this.deliveryStatus.deliveredAt, label: 'Доставлен' }
+    ];
 
-        // Определяем активный шаг на основе статуса
-        let activeStep = 1;
-        switch (this.deliveryStatus.status) {
-            case 'Assigned':
-                activeStep = 3;
-                break;
-            case 'PickedUp':
-                activeStep = 4;
-                break;
-            case 'OnTheWay':
-                activeStep = 4;
-                break;
-            case 'Delivered':
-                activeStep = 5;
-                break;
-        }
+    let activeStep = 1;
+    switch (this.deliveryStatus.status) {
+        case 'Preparing':
+            activeStep = 2; // Готовится
+            break;
+        case 'PickingUp':
+            activeStep = 3; // Ожидает курьера
+            break;
+        case 'OnTheWay':
+            activeStep = 4; // В пути
+            break;
+        case 'Delivered':
+            activeStep = 5; // Доставлен
+            break;
+        case 'Cancelled':
+            // Для отмененных показываем все шаги, но с серым цветом
+            activeStep = 0;
+            break;
+    }
 
-        // Обновляем каждый шаг
-        timelineSteps.forEach((step, index) => {
-            const stepNumber = index + 1;
-            const stepElement = document.querySelector(`.timeline-step:nth-child(${stepNumber})`);
+    timelineSteps.forEach((step, index) => {
+        const stepNumber = index + 1;
+        const stepElement = document.querySelector(`.timeline-step:nth-child(${stepNumber})`);
 
-            if (stepElement) {
-                // Обновляем иконку
-                const icon = stepElement.querySelector('.step-icon i');
-                if (stepNumber <= activeStep) {
-                    stepElement.classList.add('active');
-                    if (icon) icon.className = 'fas fa-check-circle';
-                } else {
-                    stepElement.classList.remove('active');
-                    if (icon) icon.className = 'fas fa-circle';
-                }
-
-                // Обновляем время
-                const timeElement = stepElement.querySelector('.step-time');
+        if (stepElement) {
+            const icon = stepElement.querySelector('.step-icon i');
+            const timeElement = stepElement.querySelector('.step-time');
+            
+            if (this.deliveryStatus.status === 'Cancelled') {
+                // Для отмененных все шаги серые
+                stepElement.classList.remove('active');
+                stepElement.classList.add('cancelled');
+                if (icon) icon.className = 'fas fa-times-circle';
+                if (timeElement) timeElement.textContent = 'Отменено';
+            } else if (stepNumber <= activeStep) {
+                stepElement.classList.add('active');
+                stepElement.classList.remove('cancelled');
+                if (icon) icon.className = 'fas fa-check-circle';
+                
                 if (timeElement && step.time) {
-                    const date = new Date(step.time);
-                    timeElement.textContent = date.toLocaleTimeString('ru-RU', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                } else if (timeElement && stepNumber === 2 && this.currentOrder) {
-                    // Время приготовления
-                    const createdAt = new Date(this.currentOrder.createdAt);
-                    const readyTime = new Date(createdAt.getTime() + 20 * 60000); // +20 минут
-                    timeElement.textContent = readyTime.toLocaleTimeString('ru-RU', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                    const date = DateTime.fromISO(step.time).toLocal();
+                    timeElement.textContent = date.toLocaleString(DateTime.TIME_SIMPLE);
+                } else if (timeElement && stepNumber === 2 && this.deliveryStatus.status === 'Preparing') {
+                    // Для шага "Готовится" показываем прогресс
+                    const now = DateTime.now().toUTC();
+                    const prepStarted = this.deliveryStatus.preparationStartedAt ? 
+                        DateTime.fromISO(this.deliveryStatus.preparationStartedAt).toUTC() : now;
+                    
+                    const elapsedPrep = now.diff(prepStarted, 'minutes').toObject().minutes;
+                    const remainingPrep = Math.max(0, this.deliveryStatus.preparationMinutes - elapsedPrep);
+                    
+                    if (remainingPrep > 0) {
+                        timeElement.textContent = `${Math.ceil(remainingPrep)} мин`;
+                    } else {
+                        timeElement.textContent = 'Готово';
+                    }
                 }
+            } else {
+                stepElement.classList.remove('active');
+                stepElement.classList.remove('cancelled');
+                if (icon) icon.className = 'fas fa-circle';
+                
+                if (timeElement) {
+                    timeElement.textContent = 'Ожидается';
+                }
+            }
+        }
+    });
+
+    // Обновляем таймер доставки
+    this.updateDeliveryTimer();
+}
+
+updateDeliveryTimer() {
+    if (!this.deliveryStatus) {
+        this.hideTimer();
+        return;
+    }
+
+    // ДЕБАГ
+    console.log('⏰ Timer data:', {
+        preparationMinutes: this.deliveryStatus.preparationMinutes,
+        deliveryMinutes: this.deliveryStatus.deliveryMinutes,
+        totalMinutes: this.deliveryStatus.totalMinutes,
+        estimatedDurationMinutes: this.deliveryStatus.estimatedDurationMinutes,
+        preparationTimeMinutes: this.deliveryStatus.preparationTimeMinutes,
+        deliveryTimeMinutes: this.deliveryStatus.deliveryTimeMinutes,
+        remainingMinutes: this.deliveryStatus.remainingMinutes,
+        currentPhase: this.deliveryStatus.currentPhase
+    });
+
+    // Используем правильные поля
+    const remainingMinutes = this.deliveryStatus.remainingMinutes || 0;
+    const currentPhase = this.deliveryStatus.currentPhase || 'preparation';
+    
+    // Пробуем разные варианты имен полей
+    let preparationMinutes = this.deliveryStatus.preparationMinutes || 
+                            this.deliveryStatus.preparationTimeMinutes || 0;
+    let deliveryMinutes = this.deliveryStatus.deliveryMinutes || 
+                         this.deliveryStatus.deliveryTimeMinutes || 0;
+    let totalMinutes = this.deliveryStatus.totalMinutes || 
+                      this.deliveryStatus.estimatedDurationMinutes || 45;
+
+    // Если значения не пришли, используем разумные дефолты
+    if (preparationMinutes === 0 && deliveryMinutes === 0 && totalMinutes > 0) {
+        // Предполагаем 60%/40% разделение
+        preparationMinutes = Math.round(totalMinutes * 0.6);
+        deliveryMinutes = totalMinutes - preparationMinutes;
+    }
+
+    console.log('🎯 Final timer values:', {
+        preparationMinutes,
+        deliveryMinutes,
+        totalMinutes,
+        remainingMinutes,
+        currentPhase
+    });
+
+    // Обновляем отображение таймера
+    this.updateTimerDisplay(currentPhase, remainingMinutes, preparationMinutes, deliveryMinutes, totalMinutes);
+    
+    // Показываем таймер
+    this.showTimer();
+}
+
+updateTimerDisplay() {
+    if (!this.deliveryStatus) {
+        this.hideTimer();
+        return;
+    }
+
+    // Используем правильные поля
+    const remainingMinutes = this.deliveryStatus.remainingMinutes || 0;
+    const preparationMinutes = this.deliveryStatus.preparationMinutes || 
+                              this.deliveryStatus.preparationTimeMinutes || 0;
+    let deliveryMinutes = this.deliveryStatus.deliveryMinutes || 
+                         this.deliveryStatus.deliveryTimeMinutes || 0;
+    let totalMinutes = this.deliveryStatus.totalMinutes || 
+                      this.deliveryStatus.estimatedDurationMinutes || 45;
+
+    console.log('🎯 Timer values:', {
+        status: this.deliveryStatus.status,
+        preparationMinutes,
+        deliveryMinutes,
+        totalMinutes,
+        remainingMinutes
+    });
+
+    // Вызываем соответствующий метод отображения
+    const status = this.deliveryStatus.status;
+    
+    if (status === 'Preparing') {
+        this.showPreparationTimer(preparationMinutes, deliveryMinutes, totalMinutes);
+    } else if (status === 'PickingUp') {
+        this.showPickingUpTimer(deliveryMinutes, totalMinutes);
+    } else if (status === 'OnTheWay') {
+        this.showDeliveryTimer(deliveryMinutes, totalMinutes);
+    } else if (status === 'Delivered') {
+        this.showCompletedTimer();
+    } else if (status === 'Cancelled') {
+        this.showCancelledTimer();
+    } else {
+        // Статус по умолчанию
+        this.showPreparationTimer(preparationMinutes, deliveryMinutes, totalMinutes);
+    }
+    
+    // Обновляем статус
+    this.updateTimerStatus(this.deliveryStatus.status, remainingMinutes);
+}
+
+showCancelledTimer() {
+    // Заказ отменен
+    const prepTimer = document.getElementById('preparationTimer');
+    const deliveryTimer = document.getElementById('deliveryTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    
+    if (prepTimer) prepTimer.style.display = 'block';
+    if (deliveryTimer) deliveryTimer.style.display = 'block';
+    if (totalTimer) totalTimer.style.display = 'block';
+
+    // Все прогрессы красные
+    const prepCircle = document.querySelector('#preparationTimer .timer-progress');
+    const deliveryCircle = document.querySelector('#deliveryTimer .timer-progress');
+    const totalCircle = document.querySelector('#totalTimer .timer-progress');
+    
+    if (prepCircle) {
+        prepCircle.style.background = `conic-gradient(#e74c3c 0% 100%, #e0e0e0 100% 100%)`;
+    }
+    
+    if (deliveryCircle) {
+        deliveryCircle.style.background = `conic-gradient(#e74c3c 0% 100%, #e0e0e0 100% 100%)`;
+    }
+    
+    if (totalCircle) {
+        totalCircle.style.background = `conic-gradient(#e74c3c 0% 100%, #e0e0e0 100% 100%)`;
+    }
+
+    // Обновляем время
+    const prepTimeElement = document.getElementById('preparationTime');
+    const deliveryTimeElement = document.getElementById('deliveryTime');
+    const totalTimeElement = document.getElementById('totalTime');
+    
+    if (prepTimeElement) prepTimeElement.textContent = 'Отменено';
+    if (deliveryTimeElement) deliveryTimeElement.textContent = 'Отменено';
+    if (totalTimeElement) totalTimeElement.textContent = 'Отменено';
+}
+
+showCompletedTimer() {
+    // Все завершено
+    const prepTimer = document.getElementById('preparationTimer');
+    const deliveryTimer = document.getElementById('deliveryTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    
+    if (prepTimer) prepTimer.style.display = 'block';
+    if (deliveryTimer) deliveryTimer.style.display = 'block';
+    if (totalTimer) totalTimer.style.display = 'block';
+
+    // Все прогрессы на 100%
+    const prepCircle = document.querySelector('#preparationTimer .timer-progress');
+    const deliveryCircle = document.querySelector('#deliveryTimer .timer-progress');
+    const totalCircle = document.querySelector('#totalTimer .timer-progress');
+    
+    if (prepCircle) {
+        prepCircle.style.background = `conic-gradient(#2ecc71 0% 100%, #e0e0e0 100% 100%)`;
+    }
+    
+    if (deliveryCircle) {
+        deliveryCircle.style.background = `conic-gradient(#2ecc71 0% 100%, #e0e0e0 100% 100%)`;
+    }
+    
+    if (totalCircle) {
+        totalCircle.style.background = `conic-gradient(#2ecc71 0% 100%, #e0e0e0 100% 100%)`;
+    }
+
+    // Обновляем время
+    const prepTimeElement = document.getElementById('preparationTime');
+    const deliveryTimeElement = document.getElementById('deliveryTime');
+    const totalTimeElement = document.getElementById('totalTime');
+    
+    if (prepTimeElement) prepTimeElement.textContent = 'Готово';
+    if (deliveryTimeElement) deliveryTimeElement.textContent = 'Доставлено';
+    if (totalTimeElement) totalTimeElement.textContent = 'Завершено';
+}
+
+showPickingUpTimer(deliveryMinutes, totalMinutes) {
+    // Показываем, что готовка завершена, ожидаем курьера
+    const prepTimer = document.getElementById('preparationTimer');
+    const deliveryTimer = document.getElementById('deliveryTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    
+    if (prepTimer) prepTimer.style.display = 'block';
+    if (deliveryTimer) deliveryTimer.style.display = 'none';
+    if (totalTimer) totalTimer.style.display = 'block';
+
+    // Готовка завершена - 100%
+    const prepCircle = document.querySelector('#preparationTimer .timer-progress');
+    if (prepCircle) {
+        prepCircle.style.background = `conic-gradient(#2ecc71 0% 100%, #e0e0e0 100% 100%)`;
+    }
+
+    // Обновляем время приготовления
+    const prepTimeElement = document.getElementById('preparationTime');
+    if (prepTimeElement) {
+        prepTimeElement.textContent = 'Готово';
+    }
+
+    const totalTimeElement = document.getElementById('totalTime');
+    if (totalTimeElement) {
+        totalTimeElement.textContent = `${deliveryMinutes} мин`;
+    }
+}
+
+showDeliveryTimer(deliveryMinutes, totalMinutes) {
+    const now = DateTime.now().toUTC();
+    const deliveryStarted = this.deliveryStatus.deliveryStartedAt ? 
+        DateTime.fromISO(this.deliveryStatus.deliveryStartedAt).toUTC() : now;
+    
+    const elapsedDelivery = now.diff(deliveryStarted, 'minutes').toObject().minutes;
+    const remainingDelivery = Math.max(0, deliveryMinutes - elapsedDelivery);
+    const deliveryProgress = deliveryMinutes > 0 ? (elapsedDelivery / deliveryMinutes) * 100 : 0;
+
+    // Показываем все таймеры
+    const prepTimer = document.getElementById('preparationTimer');
+    const deliveryTimer = document.getElementById('deliveryTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    
+    if (prepTimer) prepTimer.style.display = 'block';
+    if (deliveryTimer) deliveryTimer.style.display = 'block';
+    if (totalTimer) totalTimer.style.display = 'block';
+
+    // Готовка завершена
+    const prepCircle = document.querySelector('#preparationTimer .timer-progress');
+    if (prepCircle) {
+        prepCircle.style.background = `conic-gradient(#2ecc71 0% 100%, #e0e0e0 100% 100%)`;
+    }
+
+    // Прогресс доставки
+    const deliveryCircle = document.querySelector('#deliveryTimer .timer-progress');
+    if (deliveryCircle) {
+        deliveryCircle.style.background = `conic-gradient(#9b59b6 0% ${deliveryProgress}%, #e0e0e0 ${deliveryProgress}% 100%)`;
+    }
+
+    // Общее время
+    const totalRemaining = remainingDelivery;
+    const totalProgress = totalMinutes > 0 ? 
+        ((totalMinutes - totalRemaining) / totalMinutes) * 100 : 0;
+    
+    const totalCircle = document.querySelector('#totalTimer .timer-progress');
+    if (totalCircle) {
+        totalCircle.style.background = `conic-gradient(#f39c12 0% ${totalProgress}%, #e0e0e0 ${totalProgress}% 100%)`;
+    }
+
+    // Обновляем время
+    const prepTimeElement = document.getElementById('preparationTime');
+    if (prepTimeElement) {
+        prepTimeElement.textContent = 'Готово';
+    }
+
+    const deliveryTimeElement = document.getElementById('deliveryTime');
+    if (deliveryTimeElement) {
+        deliveryTimeElement.textContent = `${Math.ceil(remainingDelivery)} мин`;
+    }
+
+    const totalTimeElement = document.getElementById('totalTime');
+    if (totalTimeElement) {
+        totalTimeElement.textContent = `${Math.ceil(totalRemaining)} мин`;
+    }
+}
+
+showPreparationTimer(prepMinutes, deliveryMinutes, totalMinutes) {
+    const now = DateTime.now().toUTC();
+    const prepStarted = this.deliveryStatus.preparationStartedAt ? 
+        DateTime.fromISO(this.deliveryStatus.preparationStartedAt).toUTC() : now;
+    
+    const elapsedPrep = now.diff(prepStarted, 'minutes').toObject().minutes;
+    const remainingPrep = Math.max(0, prepMinutes - elapsedPrep);
+    const prepProgress = prepMinutes > 0 ? (elapsedPrep / prepMinutes) * 100 : 0;
+
+    // Показываем только таймер готовки
+    const prepTimer = document.getElementById('preparationTimer');
+    const deliveryTimer = document.getElementById('deliveryTimer');
+    const totalTimer = document.getElementById('totalTimer');
+    
+    if (prepTimer) prepTimer.style.display = 'block';
+    if (deliveryTimer) deliveryTimer.style.display = 'none';
+    if (totalTimer) totalTimer.style.display = 'block';
+
+    // Обновляем прогресс готовки
+    const prepCircle = document.querySelector('#preparationTimer .timer-progress');
+    if (prepCircle) {
+        prepCircle.style.background = `conic-gradient(#3498db 0% ${prepProgress}%, #e0e0e0 ${prepProgress}% 100%)`;
+    }
+
+    // Обновляем время
+    const prepTimeElement = document.getElementById('preparationTime');
+    if (prepTimeElement) {
+        prepTimeElement.textContent = `${Math.ceil(remainingPrep)} мин`;
+    }
+
+    const totalTimeElement = document.getElementById('totalTime');
+    if (totalTimeElement) {
+        totalTimeElement.textContent = `${totalMinutes} мин`;
+    }
+}
+
+
+    updateTimerStatus(status, remainingMinutes) {
+        const statusElement = document.getElementById('timerStatus');
+        if (!statusElement) return;
+        
+        const statusMap = {
+            'Preparing': 'Заказ готовится',
+            'ReadyForPickup': 'Готов к выдаче курьеру',
+            'Assigned': 'Курьер назначен',
+            'PickedUp': 'Курьер забрал заказ',
+            'OnTheWay': 'В пути к вам',
+            'Delivered': 'Заказ доставлен!',
+            'Cancelled': 'Заказ отменен'
+        };
+        
+        let statusText = statusMap[status] || status;
+        
+        // Добавляем время если есть
+        if (remainingMinutes > 0 && status !== 'Delivered' && status !== 'Cancelled') {
+            statusText += ` • Заказ прибудет через ${remainingMinutes} мин`;
+        }
+        
+        statusElement.textContent = statusText;
+    }
+
+    updateTimerSteps(currentStatus) {
+        // Сбрасываем все шаги
+        ['Preparing', 'Pickup', 'Delivering', 'Delivered'].forEach(step => {
+            const element = document.getElementById(`step${step}`);
+            if (element) {
+                element.classList.remove('active');
+            }
+        });
+        
+        // Активируем шаги в зависимости от статуса
+        const statusSteps = {
+            'Preparing': ['Preparing'],
+            'ReadyForPickup': ['Preparing'],
+            'Assigned': ['Preparing', 'Pickup'],
+            'PickedUp': ['Preparing', 'Pickup'],
+            'OnTheWay': ['Preparing', 'Pickup', 'Delivering'],
+            'Delivered': ['Preparing', 'Pickup', 'Delivering', 'Delivered']
+        };
+        
+        const activeSteps = statusSteps[currentStatus] || [];
+        activeSteps.forEach(step => {
+            const element = document.getElementById(`step${step}`);
+            if (element) {
+                element.classList.add('active');
             }
         });
     }
@@ -301,63 +696,143 @@ class DeliveryManager {
     }
 
     // Обновление информации о курьере
-    updateCourierInfo() {
-        const courierInfo = document.getElementById('courierInfo');
-
-        if (this.courier && this.deliveryStatus &&
-            (this.deliveryStatus.status === 'Assigned' ||
-                this.deliveryStatus.status === 'PickedUp' ||
-                this.deliveryStatus.status === 'OnTheWay')) {
-
-            courierInfo.style.display = 'block';
-
-            document.getElementById('courierName').textContent = this.courier.name;
-            document.getElementById('courierRating').textContent = this.courier.rating;
-            document.getElementById('courierPhone').textContent = this.courier.phone;
-
-            // Обновляем расстояние (заглушка)
-            const distance = (Math.random() * 2 + 0.5).toFixed(1);
-            document.getElementById('distance').textContent = distance;
-
-        } else {
-            courierInfo.style.display = 'none';
-        }
+    // Обновление информации о курьере
+updateCourierInfo() {
+    console.log('🔄 Updating courier info...');
+    
+    // Получаем блок информации о курьере
+    const courierInfo = document.getElementById('courierInfo');
+    if (!courierInfo) {
+        console.error('❌ Element #courierInfo not found in HTML');
+        return;
     }
+    
+    // Проверяем, есть ли данные о курьере
+    const hasCourierData = this.deliveryStatus && 
+                          this.deliveryStatus.courier && 
+                          this.deliveryStatus.courier.name;
+    
+    console.log('📦 Courier data check:', {
+        hasDeliveryStatus: !!this.deliveryStatus,
+        hasCourier: !!(this.deliveryStatus && this.deliveryStatus.courier),
+        courierData: this.deliveryStatus?.courier,
+        status: this.deliveryStatus?.status
+    });
+    
+    // Показываем или скрываем блок в зависимости от статуса
+    if (hasCourierData && 
+        (this.deliveryStatus.status === 'Assigned' || 
+         this.deliveryStatus.status === 'PickingUp' ||
+         this.deliveryStatus.status === 'OnTheWay')) {
+        
+        courierInfo.style.display = 'block';
+        console.log('✅ Showing courier info');
+        
+        // Безопасно обновляем все элементы
+        this.updateCourierElement('courierName', this.deliveryStatus.courier.name, 'Курьер');
+        this.updateCourierElement('courierPhone', this.deliveryStatus.courier.phoneNumber, 'Номер не указан');
+        this.updateCourierElement('courierRating', this.deliveryStatus.courier.rating || '4.5', '4.5');
+        this.updateCourierElement('courierVehicle', this.deliveryStatus.courier.vehicleType || 'Транспорт', 'Транспорт');
+        
+        // Обновляем статус курьера
+        const courierStatus = document.getElementById('courierStatus');
+        if (courierStatus) {
+            courierStatus.textContent = this.deliveryStatus.status === 'OnTheWay' ? 'В пути' : 'Ожидает';
+            courierStatus.className = this.deliveryStatus.status === 'OnTheWay' ? 
+                'courier-status-active' : 'courier-status-waiting';
+        }
+        
+        // Обновляем аватар
+        const courierAvatar = document.getElementById('courierAvatar');
+        if (courierAvatar) {
+            const iconClass = this.getCourierVehicleIcon(this.deliveryStatus.courier.vehicleType);
+            courierAvatar.innerHTML = `<i class="${iconClass}"></i>`;
+        }
+        
+    } else {
+        // Скрываем блок, если нет курьера или неподходящий статус
+        courierInfo.style.display = 'none';
+        console.log('📭 Hiding courier info (no courier data or wrong status)');
+    }
+}
+
+// Вспомогательный метод для безопасного обновления элементов
+updateCourierElement(elementId, value, defaultValue = '') {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value !== undefined && value !== null ? value : defaultValue;
+    } else {
+        console.warn(`⚠️ Element #${elementId} not found in HTML`);
+    }
+}
+
+
+// Получение иконки для типа транспорта
+getCourierVehicleIcon(vehicleType) {
+    if (!vehicleType) return 'fas fa-user';
+    
+    const iconMap = {
+        'Bicycle': 'fas fa-bicycle',
+        'Motorcycle': 'fas fa-motorcycle',
+        'Car': 'fas fa-car',
+        'Scooter': 'fas fa-scooter',
+        'Walking': 'fas fa-walking'
+    };
+    
+    return iconMap[vehicleType] || 'fas fa-user';
+}
 
     // Обновление деталей заказа
-    updateOrderDetails() {
-        if (!this.currentOrder) return;
+    // Обновление деталей заказа
+updateOrderDetails() {
+    if (!this.currentOrder) return;
 
-        // Основные детали
-        document.getElementById('detailOrderNumber').textContent =
-            this.currentOrder.id.substring(0, 8);
-        document.getElementById('detailRestaurant').textContent =
-            this.currentOrder.restaurant?.name || 'Ресторан';
-        document.getElementById('detailAddress').textContent =
-            this.currentOrder.deliveryAddress || 'Адрес не указан';
-        document.getElementById('detailOrderTime').textContent =
-            new Date(this.currentOrder.createdAt).toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        document.getElementById('detailAmount').textContent =
-            Utils.formatPrice(this.currentOrder.totalAmount || 0);
+    // Основные детали
+    document.getElementById('detailOrderNumber').textContent =
+        this.currentOrder.id.substring(0, 8);
+    document.getElementById('detailRestaurant').textContent =
+        this.currentOrder.restaurant?.name || 'Ресторан';
+    document.getElementById('detailAddress').textContent =
+        this.currentOrder.deliveryAddress || 'Адрес не указан';
+    document.getElementById('detailOrderTime').textContent =
+        new Date(this.currentOrder.createdAt).toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    document.getElementById('detailAmount').textContent =
+        Utils.formatPrice(this.currentOrder.totalAmount || 0);
 
-        // Время доставки
+    // Время доставки - берем из доставки или рассчитываем
+    let deliveryTimeElement = document.getElementById('detailDeliveryTime');
+    
+    if (this.deliveryStatus && this.deliveryStatus.estimatedDeliveryTime) {
+        // Используем время доставки из БД
+        const estimatedDeliveryTime = new Date(this.deliveryStatus.estimatedDeliveryTime);
+        deliveryTimeElement.textContent = estimatedDeliveryTime.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else if (this.deliveryStatus && this.deliveryStatus.totalMinutes) {
+        // Рассчитываем: время заказа + общее время доставки
+        const createdAt = new Date(this.currentOrder.createdAt);
+        const deliveryTime = new Date(createdAt.getTime() + this.deliveryStatus.totalMinutes * 60000);
+        deliveryTimeElement.textContent = deliveryTime.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else {
+        // Используем дефолтное время (45 минут)
         const createdAt = new Date(this.currentOrder.createdAt);
         const deliveryTime = new Date(createdAt.getTime() + 45 * 60000);
-        document.getElementById('detailDeliveryTime').textContent =
-            deliveryTime.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-        // Способ оплаты
-        document.getElementById('detailPayment').textContent = 'Карта онлайн'; // Заглушка
-
-        // Состав заказа
-        this.updateOrderItems();
+        deliveryTimeElement.textContent = deliveryTime.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
+
+    // Состав заказа
+    this.updateOrderItems();
+}
 
     // Обновление состава заказа
     updateOrderItems() {
@@ -376,6 +851,42 @@ class DeliveryManager {
         }
     }
 
+
+    
+    showTimer() {
+        const timerSection = document.getElementById('deliveryTimerSection');
+        if (timerSection) {
+            timerSection.style.display = 'block';
+        }
+    }
+
+    hideTimer() {
+        const timerSection = document.getElementById('deliveryTimerSection');
+        if (timerSection) {
+            timerSection.style.display = 'none';
+        }
+    }
+
+    startTimerUpdates() {
+        // Останавливаем предыдущий интервал если есть
+        if (this.timerUpdateInterval) {
+            clearInterval(this.timerUpdateInterval);
+        }
+        
+        // Обновляем таймер каждую минуту
+        this.timerUpdateInterval = setInterval(() => {
+            if (this.deliveryStatus && this.deliveryStatus.status !== 'Delivered') {
+                this.updateDeliveryTimer();
+            }
+        }, 60000); // 1 минута
+    }
+
+    stopTimerUpdates() {
+        if (this.timerUpdateInterval) {
+            clearInterval(this.timerUpdateInterval);
+            this.timerUpdateInterval = null;
+        }
+    }
     // Показ карточки доставки
     showDeliveryCard() {
         document.getElementById('deliveryCard').style.display = 'block';

@@ -86,12 +86,6 @@
                         <h2>Адрес доставки</h2>
 
                         <form id="addressForm">
-                            <div class="form-group">
-                                <label for="address">Адрес *</label>
-                                <input type="text" id="address" required
-                                       placeholder="Улица, дом, квартира">
-                            </div>
-
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="city">Город *</label>
@@ -99,18 +93,15 @@
                                            placeholder="Москва">
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="postalCode">Индекс</label>
-                                    <input type="text" id="postalCode"
-                                           placeholder="123456">
-                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Адрес *</label>
+                                <input type="text" id="address" required
+                                       placeholder="Улица, дом, квартира">
                             </div>
 
-                            <div class="form-group">
-                                <label for="apartment">Квартира/Офис</label>
-                                <input type="text" id="apartment"
-                                       placeholder="Номер квартиры или офиса">
-                            </div>
+                            
+
 
                             <div class="form-group">
                                 <label for="entrance">Подъезд</label>
@@ -146,89 +137,126 @@
                     </section>
 
                     <!-- Шаг 2: Способ оплаты -->
-                    <section class="checkout-step" id="step2">
-                        <h2>Способ оплаты</h2>
+<section class="checkout-step" id="step2">
+    <h2>Способ оплаты</h2>
 
-                        <div class="payment-methods">
-                            <div class="payment-method active" data-method="card">
-                                <div class="method-header">
-                                    <i class="fas fa-credit-card"></i>
-                                    <div>
-                                        <h4>Банковская карта</h4>
-                                        <p>Visa, MasterCard, Мир</p>
-                                    </div>
-                                </div>
-                            </div>
+    <div class="payment-methods">
+        <div class="payment-method active" data-method="card">
+            <div class="method-header">
+                <i class="fas fa-credit-card"></i>
+                <div>
+                    <h4>Банковская карта</h4>
+                    <p>Visa, MasterCard, Мир</p>
+                </div>
+            </div>
+        </div>
 
-                            <div class="payment-method" data-method="cash">
-                                <div class="method-header">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    <div>
-                                        <h4>Наличными</h4>
-                                        <p>Оплата при получении</p>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="payment-method" data-method="cash">
+            <div class="method-header">
+                <i class="fas fa-money-bill-wave"></i>
+                <div>
+                    <h4>Наличными</h4>
+                    <p>Оплата при получении</p>
+                </div>
+            </div>
+        </div>
 
-                            <div class="payment-method" data-method="online">
-                                <div class="method-header">
-                                    <i class="fas fa-mobile-alt"></i>
-                                    <div>
-                                        <h4>Онлайн-кошелек</h4>
-                                        <p>ЮMoney, QIWI</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="payment-method" data-method="online">
+            <div class="method-header">
+                <i class="fas fa-mobile-alt"></i>
+                <div>
+                    <h4>Онлайн-кошелек</h4>
+                    <p>ЮMoney, QIWI</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Форма для карты -->
-                        <form id="cardForm" class="payment-form">
-                            <div class="form-group">
-                                <label for="cardNumber">Номер карты</label>
-                                <input type="text" id="cardNumber"
-                                       placeholder="1234 5678 9012 3456"
-                                       maxlength="19">
-                            </div>
+    <!-- Контейнер для сохраненных карт -->
+    <div id="savedCardsContainer">
+        <!-- Карты будут загружены динамически -->
+        <div class="loading-cards">
+            <div class="spinner"></div>
+            <p>Загружаем сохраненные карты...</p>
+        </div>
+    </div>
 
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="cardExpiry">Срок действия</label>
-                                    <input type="text" id="cardExpiry"
-                                           placeholder="ММ/ГГ"
-                                           maxlength="5">
-                                </div>
+    <!-- Форма для новой карты -->
+    <div id="newCardForm" style="display: none;">
+        <form id="cardForm" class="payment-form">
+            <div class="form-group">
+                <label for="cardNumber">Номер карты</label>
+                <input type="text" id="cardNumber"
+                       placeholder="1234 5678 9012 3456"
+                       maxlength="19"
+                       oninput="formatCardNumber(this)">
+                <small class="form-hint">Введите 16-значный номер карты</small>
+            </div>
 
-                                <div class="form-group">
-                                    <label for="cardCVC">CVC</label>
-                                    <input type="text" id="cardCVC"
-                                           placeholder="123"
-                                           maxlength="3">
-                                </div>
-                            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cardExpiry">Срок действия</label>
+                    <input type="text" id="cardExpiry"
+                           placeholder="ММ/ГГ"
+                           maxlength="5"
+                           oninput="formatCardExpiry(this)">
+                </div>
 
-                            <div class="form-group">
-                                <label for="cardHolder">Имя владельца</label>
-                                <input type="text" id="cardHolder"
-                                       placeholder="IVAN IVANOV">
-                            </div>
+                <div class="form-group">
+                    <label for="cardCVC">CVC</label>
+                    <input type="password" id="cardCVC"
+                           placeholder="123"
+                           maxlength="4">
+                    <small class="form-hint">3 или 4 цифры на обратной стороне</small>
+                </div>
+            </div>
 
-                            <div class="form-options">
-                                <label class="checkbox">
-                                    <input type="checkbox" id="saveCard">
-                                    <span>Сохранить карту для будущих покупок</span>
-                                </label>
-                            </div>
-                        </form>
+            <div class="form-group">
+                <label for="cardHolder">Имя владельца</label>
+                <input type="text" id="cardHolder"
+                       placeholder="IVAN IVANOV">
+            </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-outline" id="prevStep2Btn">
-                                Назад
-                            </button>
-                            <button type="button" class="btn btn-primary" id="nextStep2Btn">
-                                Далее: Подтверждение
-                            </button>
-                        </div>
-                    </section>
+            <div class="form-options">
+                <label class="checkbox">
+                    <input type="checkbox" id="saveCard" checked>
+                    <span>Сохранить карту для будущих покупок</span>
+                </label>
+            </div>
+        </form>
+    </div>
+
+    <!-- Информация о выбранной сохраненной карте -->
+    <div id="selectedCardInfo" style="display: none;"></div>
+
+    <!-- Поле для CVC сохраненной карты -->
+    <div id="savedCardCvv" style="display: none;">
+        <div class="form-group">
+            <label for="savedCardCvvInput">CVC код</label>
+            <input type="password" id="savedCardCvvInput" 
+                   placeholder="123" maxlength="4"
+                   class="cvv-input">
+            <small class="form-hint">
+                <i class="fas fa-info-circle"></i>
+                3 или 4 цифры на обратной стороне карты
+            </small>
+        </div>
+    </div>
+
+    <div class="payment-security">
+        <i class="fas fa-lock"></i>
+        <span>Ваши платежные данные защищены</span>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn btn-outline" id="prevStep2Btn">
+            Назад
+        </button>
+        <button type="button" class="btn btn-primary" id="nextStep2Btn">
+            Далее: Подтверждение
+        </button>
+    </div>
+</section>
 
                     <!-- Шаг 3: Подтверждение заказа -->
                     <section class="checkout-step" id="step3">
@@ -304,13 +332,6 @@
                             <span class="total-amount" id="checkoutTotal">0 ₽</span>
                         </div>
 
-                        <div class="estimated-delivery">
-                            <i class="fas fa-clock"></i>
-                            <div>
-                                <p><strong>Примерное время доставки:</strong></p>
-                                <p id="deliveryTime">30-45 минут</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -363,10 +384,21 @@
 
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/cart.js"></script>
     <script src="js/checkout.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
+         document.addEventListener('DOMContentLoaded', function() {
+        if (typeof ApiClient === 'undefined') {
+            console.error('ApiClient not loaded');
+            return;
+        }
+        
+        if (typeof checkoutManager === 'undefined') {
+            console.error('checkoutManager not loaded');
+            return;
+        }
+        
+        checkAuth();
 
             // Инициализация мобильного меню
             document.getElementById('mobileMenuBtn').addEventListener('click', function() {
@@ -420,6 +452,62 @@
                 }
             });
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
+    document.addEventListener('DOMContentLoaded', function() {
+    // Обработчики для форматирования карты
+    const cardNumberInput = document.getElementById('cardNumber');
+    const cardExpiryInput = document.getElementById('cardExpiry');
+    
+    if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function() {
+            if (checkoutManager && checkoutManager.formatCardNumber) {
+                checkoutManager.formatCardNumber(this);
+            }
+        });
+    }
+    
+    if (cardExpiryInput) {
+        cardExpiryInput.addEventListener('input', function() {
+            if (checkoutManager && checkoutManager.formatCardExpiry) {
+                checkoutManager.formatCardExpiry(this);
+            }
+        });
+    }
+});
+document.querySelectorAll('.payment-method').forEach(method => {
+    method.addEventListener('click', function() {
+        const paymentMethod = this.dataset.method;
+        
+        // Если выбран не карточный метод оплаты, скрываем CVC
+        if (paymentMethod !== 'card') {
+            const savedCardCvv = document.getElementById('savedCardCvv');
+            const savedCardCvvInput = document.getElementById('savedCardCvvInput');
+            
+            if (savedCardCvv) savedCardCvv.style.display = 'none';
+            if (savedCardCvvInput) savedCardCvvInput.value = '';
+        }
+    });
+});
     </script>
 </body>
 </html>

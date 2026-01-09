@@ -1,4 +1,5 @@
 ﻿using Shared.Core.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Order.API.Entities
 {
@@ -37,8 +38,8 @@ namespace Order.API.Entities
     public class OrderEntity : BaseEntity
     {
         public Guid UserId { get; set; }
-        public Guid RestaurantId { get; set; }
-        public string Status { get; set; } = "Pending"; // Pending, Cooking, ReadyForPickup, OnDelivery, Delivered, Cancelled
+        public Guid? RestaurantId { get; set; }
+        public string Status { get; set; } = "Preparing"; // Preparing, PickingUp, OnTheWay, Delivered, Cancelled
         public decimal TotalAmount { get; set; }
         public string DeliveryAddress { get; set; }
         public string SpecialInstructions { get; set; }
@@ -63,7 +64,6 @@ namespace Order.API.Entities
     public class ShoppingCart : BaseEntity
     {
         public Guid UserId { get; set; }
-        public Guid? RestaurantId { get; set; }
 
         public virtual ICollection<CartItem> CartItems { get; set; }
     }
@@ -74,6 +74,7 @@ namespace Order.API.Entities
         public Guid DishId { get; set; }
         public int Quantity { get; set; }
         public Guid RestaurantId { get; set; }
+
 
         public virtual ShoppingCart Cart { get; set; }
         public virtual Dish Dish { get; set; }

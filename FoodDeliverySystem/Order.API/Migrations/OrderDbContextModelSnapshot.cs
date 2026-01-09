@@ -133,7 +133,7 @@ namespace Order.API.Migrations
                     b.Property<DateTime?>("ReadyAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("RestaurantId")
+                    b.Property<Guid?>("RestaurantId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("SpecialInstructions")
@@ -256,9 +256,6 @@ namespace Order.API.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("RestaurantId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -307,9 +304,7 @@ namespace Order.API.Migrations
                 {
                     b.HasOne("Order.API.Entities.Restaurant", "Restaurant")
                         .WithMany("Orders")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RestaurantId");
 
                     b.Navigation("Restaurant");
                 });

@@ -2,8 +2,8 @@
 {
     public interface IMessageBusClient
     {
-        void Publish<T>(T message, string exchange, string routingKey);
-        void Subscribe<T>(string queue, string exchange, string routingKey, Action<T> handler);
+        void Publish<T>(T message, string routingKey);
+        void Subscribe<T>(string queue, string routingKey, Action<T> handler);
         void Dispose();
     }
 }

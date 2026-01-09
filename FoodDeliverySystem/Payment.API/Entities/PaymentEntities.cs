@@ -16,11 +16,12 @@ namespace Payment.API.Entities
         [Range(1, 12)]
         public int ExpiryMonth { get; set; }
 
-        [Range(2023, 2030)]
+        [Range(2023, 2035)]
         public int ExpiryYear { get; set; }
 
         [Required]
         public string TokenHash { get; set; } // Симулируем токен платежной системы
+
 
         public bool IsActive { get; set; } = true;
 
@@ -40,13 +41,19 @@ namespace Payment.API.Entities
         public decimal Amount { get; set; }
 
         [MaxLength(255)]
-        public string ProviderTransactionId { get; set; } // Симуляция ID от платежной системы
+        public string? ProviderTransactionId { get; set; } // Симуляция ID от платежной системы
 
         [MaxLength(500)]
-        public string FailureReason { get; set; }
+        public string? FailureReason { get; set; }
 
         public DateTime? ProcessedAt { get; set; }
 
-        public virtual UserCard Card { get; set; }
+        public virtual UserCard? Card { get; set; }
+
+        public Transaction()
+        {
+            Id = Guid.NewGuid();
+            CreatedAt = DateTime.UtcNow;
+        }
     }
 }

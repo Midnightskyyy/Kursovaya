@@ -88,83 +88,86 @@
 
                         <!-- Шаги доставки -->
                         <div class="delivery-timeline">
-                            <div class="timeline-step active">
-                                <div class="step-icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="step-content">
-                                    <h4>Заказ принят</h4>
-                                    <p class="step-time" id="step1Time">10:30</p>
-                                </div>
-                            </div>
+<!-- delivery.html - обновленный блок таймера -->
+<div class="delivery-timer-section" id="deliveryTimerSection">
+    <h3><i class="fas fa-clock"></i> Прогресс доставки</h3>
+    
+    <div class="timer-container">
+        <!-- Таймер приготовления -->
+        <div class="timer-card" id="preparationTimer">
+            <div class="timer-header">
+                <h4>Приготовление</h4>
+                <span class="timer-status-badge preparing">Готовится</span>
+            </div>
+            <div class="timer-display">
+                <div class="timer-circle small">
+                    <div class="timer-progress"></div>
+                    <span class="timer-text" id="preparationTime">--</span>
+                </div>
+            </div>
+        </div>
 
-                            <div class="timeline-step active">
-                                <div class="step-icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="step-content">
-                                    <h4>Готовится</h4>
-                                    <p class="step-time" id="step2Time">10:35</p>
-                                </div>
-                            </div>
+        <!-- Таймер доставки -->
+        <div class="timer-card" id="deliveryTimer" style="display: none;">
+            <div class="timer-header">
+                <h4>Доставка</h4>
+                <span class="timer-status-badge delivery">В пути</span>
+            </div>
+            <div class="timer-display">
+                <div class="timer-circle small">
+                    <div class="timer-progress"></div>
+                    <span class="timer-text" id="deliveryTime">--</span>
+                </div>
+            </div>
+        </div>
 
-                            <div class="timeline-step">
-                                <div class="step-icon">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <div class="step-content">
-                                    <h4>Передан курьеру</h4>
-                                    <p class="step-time" id="step3Time">Ожидается</p>
-                                </div>
-                            </div>
+    </div>
 
-                            <div class="timeline-step">
-                                <div class="step-icon">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <div class="step-content">
-                                    <h4>В пути</h4>
-                                    <p class="step-time" id="step4Time">Ожидается</p>
-                                </div>
-                            </div>
-
-                            <div class="timeline-step">
-                                <div class="step-icon">
-                                    <i class="fas fa-circle"></i>
-                                </div>
-                                <div class="step-content">
-                                    <h4>Доставлен</h4>
-                                    <p class="step-time" id="step5Time">Ожидается</p>
-                                </div>
-                            </div>
+    <div class="timer-details">
+        <p class="timer-status" id="timerStatus">Рассчитываем время...</p>
+        <div class="phase-info" id="phaseInfo">
+            <!-- Динамически заполняется -->
+        </div>
+    </div>
+</div>
                         </div>
 
                         <!-- Информация о курьере -->
-                        <div class="courier-info" id="courierInfo">
-                            <h3><i class="fas fa-motorcycle"></i> Ваш курьер</h3>
-                            <div class="courier-details">
-                                <div class="courier-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <div class="courier-text">
-                                    <h4 id="courierName">Иван Петров</h4>
-                                    <p><i class="fas fa-star"></i> Рейтинг: <span id="courierRating">4.8</span></p>
-                                    <p><i class="fas fa-phone"></i> <span id="courierPhone">+7 (999) 123-45-67</span></p>
-                                </div>
-                            </div>
-                            <button class="btn btn-outline btn-sm" id="callCourierBtn">
-                                <i class="fas fa-phone"></i> Позвонить курьеру
-                            </button>
-                        </div>
+<div class="courier-info" id="courierInfo" style="display: none;">
+    <h3><i class="fas fa-motorcycle"></i> Ваш курьер</h3>
+    <div class="courier-details">
+        <div class="courier-avatar" id="courierAvatar">
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="courier-text">
+            <h4 id="courierName">Иван Петров</h4>
+            <div class="courier-info-row">
+                <i class="fas fa-star"></i>
+                <span>Рейтинг:</span>
+                <span id="courierRating">4.8</span>
+            </div>
+            <div class="courier-info-row">
+                <i class="fas fa-phone"></i>
+                <span>Телефон:</span>
+                <span id="courierPhone">+7 (999) 123-45-67</span>
+            </div>
+            <div class="courier-info-row">
+                <i class="fas fa-car"></i>
+                <span>Транспорт:</span>
+                <span id="courierVehicle">Мотоцикл</span>
+            </div>
+            <div class="courier-info-row">
+                <i class="fas fa-check-circle"></i>
+                <span>Статус:</span>
+                <span id="courierStatus" class="courier-status-active">Активен</span>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-outline btn-sm" id="callCourierBtn">
+        <i class="fas fa-phone"></i> Позвонить курьеру
+    </button>
+</div>
 
-                        <!-- Карта доставки -->
-                        <div class="delivery-map">
-                            <div class="map-placeholder">
-                                <i class="fas fa-map-marked-alt"></i>
-                                <p>Карта отслеживания доставки</p>
-                                <p class="map-note">Курьер находится в <span id="distance">1.2</span> км от вас</p>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Если нет активных доставок -->
@@ -184,37 +187,33 @@
 
                         <div class="detail-row">
                             <span>Номер заказа:</span>
-                            <span id="detailOrderNumber">12345</span>
+                            <span id="detailOrderNumber"></span>
                         </div>
 
                         <div class="detail-row">
                             <span>Ресторан:</span>
-                            <span id="detailRestaurant">Pizza Hut</span>
+                            <span id="detailRestaurant"></span>
                         </div>
 
                         <div class="detail-row">
                             <span>Адрес доставки:</span>
-                            <span id="detailAddress">ул. Примерная, д. 10, кв. 25</span>
+                            <span id="detailAddress"></span>
                         </div>
 
                         <div class="detail-row">
                             <span>Время заказа:</span>
-                            <span id="detailOrderTime">10:30</span>
+                            <span id="detailOrderTime"></span>
                         </div>
 
                         <div class="detail-row">
                             <span>Ожидаемое время доставки:</span>
-                            <span id="detailDeliveryTime">11:15</span>
+                            <span id="detailDeliveryTime"></span>
                         </div>
 
-                        <div class="detail-row">
-                            <span>Способ оплаты:</span>
-                            <span id="detailPayment">Карта онлайн</span>
-                        </div>
 
                         <div class="detail-row">
                             <span>Сумма заказа:</span>
-                            <span class="detail-amount" id="detailAmount">1,250 ₽</span>
+                            <span class="detail-amount" id="detailAmount"></span>
                         </div>
                     </div>
 
@@ -258,8 +257,36 @@
 
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
     <script src="js/delivery.js"></script>
     <script>
+ let autoUpdateInterval;
+    
+    function startAutoUpdate() {
+        // Обновляем каждые 30 секунд
+        autoUpdateInterval = setInterval(() => {
+            const orderSelect = document.getElementById('orderSelect');
+            if (orderSelect && orderSelect.value) {
+                trackOrder(orderSelect.value);
+            }
+        }, 30000);
+    }
+    
+    function stopAutoUpdate() {
+        if (autoUpdateInterval) {
+            clearInterval(autoUpdateInterval);
+            autoUpdateInterval = null;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Запускаем автообновление
+        startAutoUpdate();
+        
+        // Останавливаем при закрытии страницы
+        window.addEventListener('beforeunload', stopAutoUpdate);
+    });
+
         document.addEventListener('DOMContentLoaded', function() {
             checkAuth();
 
@@ -305,6 +332,27 @@
                 }
             }, 30000);
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

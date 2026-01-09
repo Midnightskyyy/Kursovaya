@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -21,8 +21,9 @@
                     <a href="menu.html" class="nav-link">
                         <i class="fas fa-utensils"></i> Меню
                     </a>
-                    <a href="cart.html" class="nav-link">
+                    <a href="cart.html" class="nav-link cart-link">
                         <i class="fas fa-shopping-cart"></i> Корзина
+                        <span class="cart-count" id="navCartCount">0</span>
                     </a>
                     <a href="orders.html" class="nav-link">
                         <i class="fas fa-history"></i> Заказы
@@ -73,7 +74,7 @@
                             <h1 id="profileName">Иван Иванов</h1>
                             <p id="profileEmail">ivan@example.com</p>
                             <p class="member-since">
-                                <i class="fas fa-calendar"></i> Участник с <span id="joinDate">января 2024</span>
+                                <i class="fas fa-calendar"></i> Участник с<span id="joinDate">января 2024</span>
                             </p>
                         </div>
                         <button class="btn btn-outline" id="editProfileBtn">
@@ -178,6 +179,10 @@
                             <button class="action-btn" id="trackDeliveryBtn">
                                 <i class="fas fa-truck"></i>
                                 <span>Отследить доставку</span>
+                            </button>
+                            <button class="action-btn" id="manageCardsBtn" onclick="window.location.href='cards.html'">
+                                <i class="fas fa-credit-card"></i>
+                                <span>Мои карты</span>
                             </button>
                             <a href="#" class="action-btn" id="supportBtn">
                                 <i class="fas fa-headset"></i>
@@ -387,10 +392,6 @@
                 alert('Открывается чат поддержки');
             });
 
-            // Настройки
-            document.getElementById('manageCardsBtn').addEventListener('click', function() {
-                alert('Управление картами - в разработке');
-            });
             document.getElementById('viewPromoCodesBtn').addEventListener('click', function() {
                 alert('Промокоды - в разработке');
             });
@@ -403,6 +404,27 @@
                 }
             });
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

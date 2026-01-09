@@ -1,4 +1,4 @@
-// Логика работы с профилем пользователя
+// РЈРїСЂР°РІР»РµРЅРёРµ РїСЂРѕС„РёР»РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 
 class ProfileManager {
     constructor() {
@@ -12,7 +12,7 @@ class ProfileManager {
         };
     }
 
-    // Загрузка профиля
+    // Р—Р°РіСЂСѓР·РєР° РїСЂРѕС„РёР»СЏ
     async loadProfile() {
         try {
             const response = await ApiClient.getProfile();
@@ -29,7 +29,7 @@ class ProfileManager {
         }
     }
 
-    // Загрузка статистики
+    // Р—Р°РіСЂСѓР·РєР° СЃС‚Р°С‚РёСЃС‚РёРєРё
     async loadProfileStats() {
         try {
             const ordersResponse = await ApiClient.getOrders();
@@ -56,28 +56,28 @@ class ProfileManager {
         }
     }
 
-    // Загрузка сохраненных адресов
+    // Р—Р°РіСЂСѓР·РєР° СЃРѕС…СЂР°РЅРµРЅРЅС‹С… Р°РґСЂРµСЃРѕРІ
     async loadSavedAddresses() {
         try {
-            // В реальном приложении здесь будет запрос к API адресов
-            // Для демонстрации используем заглушку
+            // Р’ СЂРµР°Р»СЊРЅРѕРј РїСЂРёР»РѕР¶РµРЅРёРё Р·РґРµСЃСЊ Р±СѓРґРµС‚ Р·Р°РїСЂРѕСЃ Рє API СЃРµСЂРІРµСЂСѓ
+            // Р”Р»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё РёСЃРїРѕР»СЊР·СѓРµРј РјРѕРє РґР°РЅРЅС‹Рµ
             this.addresses = [
                 {
                     id: '1',
-                    title: 'Дом',
-                    address: 'ул. Ленина, д. 10, кв. 25',
-                    city: 'Москва',
+                    title: 'Р”РѕРј',
+                    address: 'СѓР». Р›РµРЅРёРЅР°, Рґ. 10, РєРІ. 25',
+                    city: 'РњРѕСЃРєРІР°',
                     postalCode: '123456',
-                    details: 'Подъезд 3, этаж 5, домофон 25',
+                    details: 'РџРѕРґСЉРµР·Рґ 3, СЌС‚Р°Р¶ 5, РєРІР°СЂС‚РёСЂР° 25',
                     isDefault: true
                 },
                 {
                     id: '2',
-                    title: 'Работа',
-                    address: 'ул. Пушкина, д. 15, офис 304',
-                    city: 'Москва',
+                    title: 'Р Р°Р±РѕС‚Р°',
+                    address: 'СѓР». РџСѓС€РєРёРЅР°, Рґ. 15, РѕС„РёСЃ 304',
+                    city: 'РњРѕСЃРєРІР°',
                     postalCode: '123457',
-                    details: 'Бизнес-центр "Плаза"',
+                    details: 'Р‘РёР·РЅРµСЃ-С†РµРЅС‚СЂ "РЎРѕР»РЅРµС‡РЅС‹Р№"',
                     isDefault: false
                 }
             ];
@@ -88,22 +88,36 @@ class ProfileManager {
         }
     }
 
-    // Обновление отображения профиля
+    // РћР±РЅРѕРІР»РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїСЂРѕС„РёР»СЏ
     updateProfileDisplay() {
         if (!this.userProfile) return;
+         const avatarContainer = document.querySelector('.profile-avatar');
+    
+    if (this.userProfile.profile?.avatarUrl) {
+        const avatarPath = this.userProfile.profile.avatarUrl.replace(/\\/g, '/');
+        
+        avatarContainer.innerHTML = `
+            <img src="${avatarPath}" 
+                 alt="РђРІР°С‚Р°СЂ" 
+                 class="profile-avatar-img"
+                 onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\"fas fa-user-circle\"></i>
+        `;
+    } else {
+        avatarContainer.innerHTML = '<i class="fas fa-user-circle"></i>';
+    }
 
-        // Имя и email
+        // РРјСЏ Рё email
         document.getElementById('profileName').textContent =
             `${this.userProfile.profile?.firstName || ''} ${this.userProfile.profile?.lastName || ''}`.trim() ||
             this.userProfile.email;
         document.getElementById('profileEmail').textContent = this.userProfile.email;
 
-        // Дата регистрации
-        const joinDate = new Date(this.userProfile.createdAt);
-        document.getElementById('joinDate').textContent =
-            joinDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+        // Р”Р°С‚Р° СЂРµРіРёСЃС‚СЂР°С†РёРё
+        const joinDate = Utils.parseDate(this.userProfile.createdAt);
+document.getElementById('joinDate').textContent =
+    joinDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 
-        // Заполняем форму редактирования
+        // Р—Р°РїРѕР»РЅРµРЅРёРµ РїРѕР»РµР№ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
         if (this.userProfile.profile) {
             document.getElementById('editFirstName').value = this.userProfile.profile.firstName || '';
             document.getElementById('editLastName').value = this.userProfile.profile.lastName || '';
@@ -112,7 +126,7 @@ class ProfileManager {
         }
     }
 
-    // Обновление отображения статистики
+    // РћР±РЅРѕРІР»РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃС‚Р°С‚РёСЃС‚РёРєРё
     updateStatsDisplay() {
         document.getElementById('totalOrders').textContent = this.statistics.totalOrders;
         document.getElementById('totalSpent').textContent = Utils.formatPrice(this.statistics.totalSpent);
@@ -120,7 +134,7 @@ class ProfileManager {
         document.getElementById('deliveryCount').textContent = this.statistics.deliveryCount;
     }
 
-    // Обновление отображения адресов
+    // РћР±РЅРѕРІР»РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р°РґСЂРµСЃРѕРІ
     updateAddressesDisplay() {
         const container = document.getElementById('addressesList');
         if (!container) return;
@@ -129,7 +143,7 @@ class ProfileManager {
             container.innerHTML = `
                 <div class="no-addresses">
                     <i class="fas fa-map-marker-alt"></i>
-                    <p>У вас нет сохраненных адресов</p>
+                    <p>РЈ РІР°СЃ РЅРµС‚ СЃРѕС…СЂР°РЅРµРЅРЅС‹С… Р°РґСЂРµСЃРѕРІ</p>
                 </div>
             `;
             return;
@@ -139,31 +153,31 @@ class ProfileManager {
             <div class="address-card ${address.isDefault ? 'active' : ''}" data-id="${address.id}">
                 <div class="address-header">
                     <span class="address-title">${address.title}</span>
-                    ${address.isDefault ? '<span class="address-default">По умолчанию</span>' : ''}
+                    ${address.isDefault ? '<span class="address-default">РџРѕ СѓРјРѕР»С‡Р°РЅРёСЋ</span>' : ''}
                 </div>
                 <p class="address-details">${address.address}, ${address.city}</p>
                 ${address.details ? `<p class="address-extra">${address.details}</p>` : ''}
                 <div class="address-actions">
                     <button class="btn btn-text edit-address-btn">
-                        <i class="fas fa-edit"></i> Изменить
+                        <i class="fas fa-edit"></i> Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ
                     </button>
                     ${!address.isDefault ? `
                         <button class="btn btn-text set-default-btn">
-                            <i class="fas fa-check-circle"></i> Сделать основным
+                            <i class="fas fa-check-circle"></i> РЎРґРµР»Р°С‚СЊ РѕСЃРЅРѕРІРЅС‹Рј
                         </button>
                         <button class="btn btn-text delete-address-btn">
-                            <i class="fas fa-trash"></i> Удалить
+                            <i class="fas fa-trash"></i> РЈРґР°Р»РёС‚СЊ
                         </button>
                     ` : ''}
                 </div>
             </div>
         `).join('');
 
-        // Добавляем обработчики для адресов
+        // Р”РѕР±Р°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ СЃРѕР±С‹С‚РёР№ РґР»СЏ Р°РґСЂРµСЃРѕРІ
         this.addAddressEventListeners();
     }
 
-    // Переключение режима редактирования профиля
+    // РџРµСЂРµРєР»СЋС‡РµРЅРёРµ СЂРµР¶РёРјР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РїСЂРѕС„РёР»СЏ
     toggleEditProfile() {
         const form = document.getElementById('editProfileForm');
         const isVisible = form.style.display !== 'none';
@@ -176,7 +190,7 @@ class ProfileManager {
         }
     }
 
-    // Сохранение профиля
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ РїСЂРѕС„РёР»СЏ
     async saveProfile(e) {
         e.preventDefault();
 
@@ -187,19 +201,19 @@ class ProfileManager {
         const phone = form.editPhone.value.trim();
         const address = form.editAddress.value.trim();
 
-        // Валидация
+        // Р’Р°Р»РёРґР°С†РёСЏ
         if (!Utils.isValidEmail(email)) {
-            Utils.showNotification('Введите корректный email', 'error');
+            Utils.showNotification('Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email', 'error');
             return;
         }
 
         if (phone && !Utils.isValidPhone(phone)) {
-            Utils.showNotification('Введите корректный номер телефона', 'error');
+            Utils.showNotification('Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ С‚РµР»РµС„РѕРЅР°', 'error');
             return;
         }
 
-        // В реальном приложении здесь будет запрос к API обновления профиля
-        // Для демонстрации обновляем локальные данные
+        // Р’ СЂРµР°Р»СЊРЅРѕРј РїСЂРёР»РѕР¶РµРЅРёРё Р·РґРµСЃСЊ Р±СѓРґРµС‚ Р·Р°РїСЂРѕСЃ Рє API РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРѕС„РёР»СЏ
+        // Р”Р»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё РѕР±РЅРѕРІР»СЏРµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
 
         if (this.userProfile) {
             this.userProfile.profile = {
@@ -210,7 +224,7 @@ class ProfileManager {
             this.userProfile.email = email;
             this.userProfile.phoneNumber = phone;
 
-            // Сохраняем адрес доставки в локальное хранилище
+            // РЎРѕС…СЂР°РЅРµРЅРёРµ Р°РґСЂРµСЃР° РґРѕСЃС‚Р°РІРєРё РІ Р»РѕРєР°Р»СЊРЅРѕРµ С…СЂР°РЅРёР»РёС‰Рµ
             if (address) {
                 localStorage.setItem('deliveryAddress', address);
             }
@@ -219,15 +233,15 @@ class ProfileManager {
         this.updateProfileDisplay();
         this.toggleEditProfile();
 
-        Utils.showNotification('Профиль успешно обновлен', 'success');
+        Utils.showNotification('РџСЂРѕС„РёР»СЊ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»РµРЅ', 'success');
     }
 
-    // Показ модального окна добавления адреса
+    // РџРѕРєР°Р· РјРѕРґР°Р»СЊРЅРѕРіРѕ РѕРєРЅР° РґРѕР±Р°РІР»РµРЅРёСЏ Р°РґСЂРµСЃР°
     showAddAddressModal() {
         document.getElementById('addressModal').style.display = 'flex';
     }
 
-    // Сохранение нового адреса
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ РЅРѕРІРѕРіРѕ Р°РґСЂРµСЃР°
     async saveNewAddress(e) {
         e.preventDefault();
 
@@ -239,11 +253,11 @@ class ProfileManager {
         const details = form.newAddressDetails.value.trim();
 
         if (!title || !address || !city) {
-            Utils.showNotification('Заполните обязательные поля', 'error');
+            Utils.showNotification('Р—Р°РїРѕР»РЅРёС‚Рµ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹Рµ РїРѕР»СЏ', 'error');
             return;
         }
 
-        // Создаем новый адрес
+        // РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ Р°РґСЂРµСЃР°
         const newAddress = {
             id: Utils.generateId(),
             title: title,
@@ -251,13 +265,13 @@ class ProfileManager {
             city: city,
             postalCode: postalCode,
             details: details,
-            isDefault: this.addresses.length === 0 // Первый адрес делаем основным
+            isDefault: this.addresses.length === 0 // РџРµСЂРІС‹Р№ Р°РґСЂРµСЃ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РѕСЃРЅРѕРІРЅС‹Рј
         };
 
-        // В реальном приложении здесь будет запрос к API
+        // Р’ СЂРµР°Р»СЊРЅРѕРј РїСЂРёР»РѕР¶РµРЅРёРё Р·РґРµСЃСЊ Р±СѓРґРµС‚ Р·Р°РїСЂРѕСЃ Рє API
         this.addresses.push(newAddress);
 
-        // Если это первый адрес или пользователь выбрал сделать основным
+        // Р•СЃР»Рё РЅРѕРІС‹Р№ Р°РґСЂРµСЃ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РєР°Рє РѕСЃРЅРѕРІРЅРѕР№, СЃРЅРёРјР°РµРј С„Р»Р°Рі СЃ РґСЂСѓРіРёС…
         if (newAddress.isDefault) {
             this.addresses.forEach(addr => {
                 if (addr.id !== newAddress.id) {
@@ -270,12 +284,12 @@ class ProfileManager {
         document.getElementById('addressModal').style.display = 'none';
         form.reset();
 
-        Utils.showNotification('Адрес успешно добавлен', 'success');
+        Utils.showNotification('РќРѕРІС‹Р№ Р°РґСЂРµСЃ РґРѕР±Р°РІР»РµРЅ', 'success');
     }
 
-    // Добавление обработчиков для адресов
+    // Р”РѕР±Р°РІР»РµРЅРёРµ РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ СЃРѕР±С‹С‚РёР№ РґР»СЏ Р°РґСЂРµСЃРѕРІ
     addAddressEventListeners() {
-        // Редактирование адреса
+        // Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ Р°РґСЂРµСЃР°
         document.querySelectorAll('.edit-address-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const addressId = e.target.closest('.address-card').dataset.id;
@@ -283,7 +297,7 @@ class ProfileManager {
             });
         });
 
-        // Установка адреса по умолчанию
+        // РЈСЃС‚Р°РЅРѕРІРєР° Р°РґСЂРµСЃР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
         document.querySelectorAll('.set-default-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const addressId = e.target.closest('.address-card').dataset.id;
@@ -291,7 +305,7 @@ class ProfileManager {
             });
         });
 
-        // Удаление адреса
+        // РЈРґР°Р»РµРЅРёРµ Р°РґСЂРµСЃР°
         document.querySelectorAll('.delete-address-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const addressId = e.target.closest('.address-card').dataset.id;
@@ -300,45 +314,46 @@ class ProfileManager {
         });
     }
 
-    // Редактирование адреса
+    // Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ Р°РґСЂРµСЃР°
     editAddress(addressId) {
         const address = this.addresses.find(addr => addr.id === addressId);
         if (!address) return;
 
-        // В реальном приложении здесь будет открытие модального окна редактирования
-        alert(`Редактирование адреса: ${address.title}\n\nВ реальном приложении здесь будет форма редактирования.`);
+        // Р’ СЂРµР°Р»СЊРЅРѕРј РїСЂРёР»РѕР¶РµРЅРёРё Р·РґРµСЃСЊ Р±СѓРґРµС‚ РѕС‚РєСЂС‹С‚РёРµ С„РѕСЂРјС‹ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ
+        // Р”Р»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё РїРѕРєР°Р·С‹РІР°РµРј Р°Р»РµСЂС‚
+        alert(`Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ Р°РґСЂРµСЃР°: ${address.title}\n\nР’ СЂРµР°Р»СЊРЅРѕРј РїСЂРёР»РѕР¶РµРЅРёРё Р·РґРµСЃСЊ Р±СѓРґРµС‚ С„РѕСЂРјР° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ.`);
     }
 
-    // Установка адреса по умолчанию
+    // РЈСЃС‚Р°РЅРѕРІРєР° Р°РґСЂРµСЃР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
     setDefaultAddress(addressId) {
         this.addresses.forEach(addr => {
             addr.isDefault = addr.id === addressId;
         });
 
         this.updateAddressesDisplay();
-        Utils.showNotification('Основной адрес изменен', 'success');
+        Utils.showNotification('РћСЃРЅРѕРІРЅРѕР№ Р°РґСЂРµСЃ РёР·РјРµРЅРµРЅ', 'success');
     }
 
-    // Удаление адреса
+    // РЈРґР°Р»РµРЅРёРµ Р°РґСЂРµСЃР°
     deleteAddress(addressId) {
-        if (!confirm('Удалить этот адрес?')) return;
+        if (!confirm('РЈРґР°Р»РёС‚СЊ СЌС‚РѕС‚ Р°РґСЂРµСЃ?')) return;
 
         const addressIndex = this.addresses.findIndex(addr => addr.id === addressId);
         if (addressIndex > -1) {
             const wasDefault = this.addresses[addressIndex].isDefault;
             this.addresses.splice(addressIndex, 1);
 
-            // Если удалили адрес по умолчанию, назначаем новый (если есть)
+            // Р•СЃР»Рё СѓРґР°Р»СЏРµРјС‹Р№ Р°РґСЂРµСЃ Р±С‹Р» РѕСЃРЅРѕРІРЅС‹Рј, РЅР°Р·РЅР°С‡Р°РµРј РЅРѕРІС‹Р№ (РµСЃР»Рё РµСЃС‚СЊ)
             if (wasDefault && this.addresses.length > 0) {
                 this.addresses[0].isDefault = true;
             }
         }
 
         this.updateAddressesDisplay();
-        Utils.showNotification('Адрес удален', 'success');
+        Utils.showNotification('РђРґСЂРµСЃ СѓРґР°Р»РµРЅ', 'success');
     }
 
-    // Заглушка профиля для тестирования
+    // Р—Р°РіСЂСѓР·РєР° РјРѕРє РґР°РЅРЅС‹С… РґР»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё
     loadMockProfile() {
         this.userProfile = {
             id: 'user-123',
@@ -347,8 +362,8 @@ class ProfileManager {
             role: 'Customer',
             createdAt: '2024-01-01T10:00:00Z',
             profile: {
-                firstName: 'Иван',
-                lastName: 'Иванов',
+                firstName: 'РРІР°РЅ',
+                lastName: 'РРІР°РЅРѕРІ',
                 avatarUrl: null
             }
         };
@@ -356,7 +371,7 @@ class ProfileManager {
         this.updateProfileDisplay();
     }
 
-    // Заглушка статистики для тестирования
+    // Р—Р°РіСЂСѓР·РєР° РјРѕРє СЃС‚Р°С‚РёСЃС‚РёРєРё РґР»СЏ РґРµРјРѕРЅСЃС‚СЂР°С†РёРё
     loadMockStats() {
         this.statistics = {
             totalOrders: 15,
@@ -369,10 +384,10 @@ class ProfileManager {
     }
 }
 
-// Инициализация менеджера профиля
+// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјРµРЅРµРґР¶РµСЂР° РїСЂРѕС„РёР»СЏ
 const profileManager = new ProfileManager();
 
-// Глобальные функции для использования в HTML
+// Р¤СѓРЅРєС†РёРё РґР»СЏ РёРЅС‚РµРіСЂР°С†РёРё СЃ HTML
 function loadProfile() {
     profileManager.loadProfile();
 }
@@ -401,7 +416,7 @@ function saveNewAddress(e) {
     profileManager.saveNewAddress(e);
 }
 
-// Экспорт для использования в других файлах
+// Р­РєСЃРїРѕСЂС‚ РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РґСЂСѓРіРёС… РјРѕРґСѓР»СЏС…
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         ProfileManager,

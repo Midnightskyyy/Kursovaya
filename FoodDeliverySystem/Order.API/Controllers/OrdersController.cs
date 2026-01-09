@@ -39,15 +39,16 @@ namespace Order.API.Controllers
                 var userId = GetUserId();
                 var order = await _orderService.CreateOrderAsync(userId, request);
 
-                // Публикация события
+                // Синхронизируем статусы - создаем заказ со статусом "Preparing"
                 _messageBus.Publish(new OrderCreatedEvent
                 {
                     OrderId = order.Id,
                     UserId = order.UserId,
-                    RestaurantId = order.RestaurantId,
+                    RestaurantId = order.RestaurantId ?? Guid.Empty,
                     TotalAmount = order.TotalAmount,
                     DeliveryAddress = order.DeliveryAddress,
                     CreatedAt = order.CreatedAt,
+                    MaxPreparationTime = order.EstimatedCookingTime ?? 30, // Важно: передаем реальное время
                     Items = order.OrderItems.Select(i => new OrderItemDto
                     {
                         DishId = i.DishId,
@@ -55,16 +56,17 @@ namespace Order.API.Controllers
                         UnitPrice = i.UnitPrice,
                         Quantity = i.Quantity
                     }).ToList()
-                }, "order.events", "order.created");
+                }, "order.created");
 
-                _logger.LogInformation("Order created: {OrderId}", order.Id);
+                _logger.LogInformation("Order created: {OrderId} with status {Status}", order.Id, order.Status);
 
                 return Accepted(ApiResponse.Ok(new
                 {
                     order.Id,
                     order.Status,
                     order.TotalAmount,
-                    EstimatedTotalTime = order.EstimatedCookingTime + 30 // + время доставки
+                    order.EstimatedCookingTime,
+                    EstimatedDeliveryTime = DateTime.UtcNow.AddMinutes((double)order.EstimatedCookingTime + 30)
                 }, "Order created successfully"));
             }
             catch (Exception ex)

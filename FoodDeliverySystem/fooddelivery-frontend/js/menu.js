@@ -270,19 +270,54 @@ class MenuManager {
     }
     
     // Добавление в корзину
-    async addToCart(dish, quantity = 1) {
-        try {
-            await ApiClient.addToCart(dish.id, quantity);
-            Utils.showNotification(`${dish.name} добавлен в корзину`, 'success');
-            updateCartCount();
-        } catch (error) {
-            console.error('Error adding to cart:', error);
-            
-            // Fallback на локальную корзину
-            ApiClient.addToLocalCart(dish, quantity);
-            Utils.showNotification(`${dish.name} добавлен в корзину`, 'success');
+    // Добавление в корзину
+async addToCart(dish, quantity = 1) {
+    const button = event?.target?.closest('.dish-add-btn') || event?.target;
+    if (!button) return;
+    
+    // Блокируем кнопку на время выполнения
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    try {
+        // Проверяем, не выполняем ли мы уже этот запрос
+        if (window.isAddingToCart) {
+            return;
         }
+        
+        window.isAddingToCart = true;
+        
+        await ApiClient.addToCart(dish.id, quantity);
+        
+        // Обновляем счетчик
+        updateCartCountGlobal();
+        
+        Utils.showNotification(`${dish.name} добавлен в корзину`, 'success');
+        
+        // Сбрасываем флаг
+        window.isAddingToCart = false;
+        
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        
+        // Fallback на локальную корзину
+        ApiClient.addToLocalCart(dish, quantity);
+        
+        // Обновляем счетчик
+        updateCartCountGlobal();
+        
+        Utils.showNotification(`${dish.name} добавлен в корзину`, 'success');
+        
+        window.isAddingToCart = false;
+    } finally {
+        // Восстанавливаем кнопку
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+        }, 500);
     }
+}
     
     // Поиск блюд
     searchDishes(query) {

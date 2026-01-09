@@ -76,7 +76,7 @@ namespace Auth.API.Controllers
                     Email = user.Email,
                     Role = user.Role,
                     CreatedAt = DateTime.UtcNow
-                }, "user.events", "user.created");
+                }, "user.created");
 
                 _logger.LogInformation("User registered successfully: {UserId}", user.Id);
 

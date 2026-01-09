@@ -28,7 +28,7 @@
                     </a>
                     <a href="cart.html" class="nav-link cart-link">
                         <i class="fas fa-shopping-cart"></i> Корзина
-                        <span class="cart-count" id="cartCount">0</span>
+                        <span class="cart-count" id="navCartCount">0</span>
                     </a>
                     <a href="orders.html" class="nav-link">
                         <i class="fas fa-history"></i> Заказы
@@ -208,6 +208,27 @@
                 }
             });
         });
+         document.addEventListener('DOMContentLoaded', function() {
+        // Обновляем счетчик сразу
+        updateCartCount();
+        
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'cart') {
+                updateCartCount();
+            }
+        });
+        
+        // Обновляем каждые 30 секунд для синхронизации
+        setInterval(updateCartCount, 30000);
+        
+        // Также обновляем при возвращении на страницу
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateCartCount();
+            }
+        });
+    });
     </script>
 </body>
 </html>

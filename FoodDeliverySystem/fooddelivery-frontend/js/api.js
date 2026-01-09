@@ -3,51 +3,91 @@
 class ApiClient {
     static BASE_URL = 'http://localhost:5000/api';
 
+    static async getPaymentCards() {
+    return this.request('/payment/cards');
+}
+
+static async getDeliveryTimerInfo(deliveryId) {
+    return this.request(`/delivery/${deliveryId}/timer`);
+}
+
+static async getDefaultPaymentCard() {
+    return this.request('/payment/cards/default');
+}
+
+static async setDefaultCard(cardId) {
+    return this.request(`/payment/cards/${cardId}/set-default`, {
+        method: 'POST'
+    });
+}
+
+static async payWithCard(orderId, amount, cardId, cvv = null) {
+    return this.request('/payment/pay/with-card', {
+        method: 'POST',
+        body: JSON.stringify({
+            orderId: orderId,
+            amount: amount,
+            cardId: cardId,
+            cvv: cvv
+        })
+    });
+}
+
     // ����� ����� ��� ���������� ��������
     static async request(endpoint, options = {}) {
-        const url = `${this.BASE_URL}${endpoint}`;
-        const token = Utils.getToken();
+    const url = `${this.BASE_URL}${endpoint}`;
+    const token = Utils.getToken();
 
-        const defaultHeaders = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        };
+    const defaultHeaders = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    };
 
-        if (token) {
-            defaultHeaders['Authorization'] = `Bearer ${token}`;
-        }
-
-        const config = {
-            ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers
-            }
-        };
-
-        try {
-            const response = await fetch(url, config);
-
-            // ���� ������ 401 (Unauthorized), �������������� �� �������� �����������
-            if (response.status === 401) {
-                Utils.clearAuth();
-                window.location.href = 'auth.html';
-                throw new Error('��������� �����������');
-            }
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || `HTTP error! status: ${response.status}`);
-            }
-
-            return data;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
-        }
+    if (token) {
+        defaultHeaders['Authorization'] = `Bearer ${token}`;
     }
 
+    const config = {
+        ...options,
+        headers: {
+            ...defaultHeaders,
+            ...options.headers
+        }
+    };
+
+    try {
+        const response = await fetch(url, config);
+
+        // Проверяем статус ответа перед попыткой парсинга JSON
+        if (response.status === 404) {
+            throw new Error(`Endpoint not found: ${endpoint}`);
+        }
+        
+        if (response.status === 401) {
+            Utils.clearAuth();
+            window.location.href = 'auth.html';
+            throw new Error('Authentication required');
+        }
+
+        // Проверяем content-type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response format: ${text}`);
+        }
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+    }
+}
     // Auth API
     static async login(email, password) {
         return this.request('/auth/login', {
@@ -143,10 +183,24 @@ class ApiClient {
         });
     }
 
+    static async updateOrderStatus(orderId, status) {
+    return this.request(`/orders/${orderId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ status })
+    });
+}
+
     // Payment API
     static async getPaymentCards() {
-        return this.request('/payment/cards');
+    try {
+        const response = await this.request('/payment/cards');
+        console.log('getPaymentCards response:', response);
+        return response;
+    } catch (error) {
+        console.error('Error in getPaymentCards:', error);
+        return { success: false, message: error.message };
     }
+}
 
     static async addPaymentCard(cardData) {
         return this.request('/payment/cards', {

@@ -1,4 +1,4 @@
-using Delivery.API.BackgroundServices;
+﻿using Delivery.API.BackgroundServices;
 using Delivery.API.Services;
 using Delivery.API.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,8 +45,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<DeliveryDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -71,6 +72,7 @@ builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
 
 // Background Services
+builder.Services.AddHostedService<DeliveryTimerService>();
 builder.Services.AddHostedService<DeliveryEventProcessor>();
 
 // CORS
@@ -97,7 +99,31 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ✅ УДАЛИТЕ или ЗАКОММЕНТИРУЙТЕ эту строку:
+// app.MapHealthChecks("/health");
+
 app.MapControllers();
 
+// Apply migrations and seed data
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<DeliveryDbContext>();
 
+        // Применяем миграции
+        await dbContext.Database.MigrateAsync();
+        Console.WriteLine("✅ Database initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error initializing database: {ex.Message}");
+    }
+}
+
+// Даем время RabbitMQ запуститься
+await Task.Delay(TimeSpan.FromSeconds(5));
+
+Console.WriteLine("🚀 Delivery API started successfully on port 8080");
 app.Run();

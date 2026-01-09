@@ -1,13 +1,13 @@
-// Логика авторизации и регистрации
+// Р¤СѓРЅРєС†РёРё Р°РІС‚РѕСЂРёР·Р°С†РёРё Рё СЂРµРіРёСЃС‚СЂР°С†РёРё РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Если на странице есть форма логина
+    // Р•СЃР»Рё РЅР° СЃС‚СЂР°РЅРёС†Рµ РµСЃС‚СЊ С„РѕСЂРјР° РІС…РѕРґР°
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
 
-    // Если на странице есть форма регистрации
+    // Р•СЃР»Рё РЅР° СЃС‚СЂР°РЅРёС†Рµ РµСЃС‚СЊ С„РѕСЂРјР° СЂРµРіРёСЃС‚СЂР°С†РёРё
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
@@ -22,14 +22,14 @@ async function handleLogin(e) {
     const password = form.password.value;
     const rememberMe = form.rememberMe.checked;
 
-    // Валидация
+    // Р’Р°Р»РёРґР°С†РёСЏ
     if (!Utils.isValidEmail(email)) {
-        Utils.showError('emailError', 'Введите корректный email');
+        Utils.showError('emailError', 'Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email');
         return;
     }
 
     if (password.length < 6) {
-        Utils.showError('passwordError', 'Пароль должен содержать не менее 6 символов');
+        Utils.showError('passwordError', 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РЅРµ РјРµРЅРµРµ 6 СЃРёРјРІРѕР»РѕРІ');
         return;
     }
 
@@ -37,13 +37,13 @@ async function handleLogin(e) {
     Utils.showLoading(loginBtn);
 
     try {
-        // Используем реальный API
+        // РћС‚РїСЂР°РІР»СЏРµРј Р·Р°РїСЂРѕСЃ РЅР° API
         const response = await ApiClient.login(email, password);
 
         if (response.success) {
             const { accessToken, refreshToken, userId, email: userEmail, role, name } = response.data;
 
-            // Сохраняем токен и данные пользователя
+            // РЎРѕС…СЂР°РЅСЏРµРј С‚РѕРєРµРЅ Рё РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
             Utils.saveToken(accessToken);
             Utils.saveUser({
                 id: userId,
@@ -52,24 +52,24 @@ async function handleLogin(e) {
                 name: name
             });
 
-            // Если выбрано "Запомнить меня", сохраняем refresh token
+            // Р•СЃР»Рё РІС‹Р±СЂР°РЅРѕ "Р—Р°РїРѕРјРЅРёС‚СЊ РјРµРЅСЏ", СЃРѕС…СЂР°РЅСЏРµРј refresh token
             if (rememberMe) {
                 localStorage.setItem('refreshToken', refreshToken);
             }
 
-            Utils.showNotification('Вход выполнен успешно!', 'success');
+            Utils.showNotification('Р’С‹ СѓСЃРїРµС€РЅРѕ РІРѕС€Р»Рё!', 'success');
 
-            // Перенаправляем на главную страницу
+            // РџРµСЂРµРЅР°РїСЂР°РІР»СЏРµРј РЅР° РіР»Р°РІРЅСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ
             setTimeout(() => {
                 window.location.href = 'menu.html';
             }, 1500);
 
         } else {
-            Utils.showError('emailError', response.message || 'Неверный email или пароль');
+            Utils.showError('emailError', response.message || 'РќРµРІРµСЂРЅС‹Р№ email РёР»Рё РїР°СЂРѕР»СЊ');
         }
     } catch (error) {
         console.error('Login error:', error);
-        Utils.showError('emailError', error.message || 'Ошибка при входе. Проверьте данные и попробуйте снова.');
+        Utils.showError('emailError', error.message || 'РћС€РёР±РєР° РїСЂРё РІС…РѕРґРµ. РџРѕР¶Р°Р»СѓР№СЃС‚Р° РїРѕРїСЂРѕР±СѓР№С‚Рµ СЃРЅРѕРІР°.');
     } finally {
         Utils.hideLoading(loginBtn);
     }
@@ -86,35 +86,35 @@ async function handleRegister(e) {
     const password = form.password.value;
     const confirmPassword = form.confirmPassword.value;
 
-    // Валидация
+    // Р’Р°Р»РёРґР°С†РёСЏ
     const errors = [];
 
     if (!firstName) {
-        errors.push({ field: 'firstNameError', message: 'Введите имя' });
+        errors.push({ field: 'firstNameError', message: 'Р’РІРµРґРёС‚Рµ РёРјСЏ' });
     }
 
     if (!lastName) {
-        errors.push({ field: 'lastNameError', message: 'Введите фамилию' });
+        errors.push({ field: 'lastNameError', message: 'Р’РІРµРґРёС‚Рµ С„Р°РјРёР»РёСЋ' });
     }
 
     if (!Utils.isValidEmail(email)) {
-        errors.push({ field: 'emailError', message: 'Введите корректный email' });
+        errors.push({ field: 'emailError', message: 'Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ email' });
     }
 
     if (phone && !Utils.isValidPhone(phone)) {
-        errors.push({ field: 'phoneError', message: 'Введите корректный номер телефона' });
+        errors.push({ field: 'phoneError', message: 'Р’РІРµРґРёС‚Рµ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РЅРѕРјРµСЂ С‚РµР»РµС„РѕРЅР°' });
     }
 
     if (password.length < 6) {
-        errors.push({ field: 'passwordError', message: 'Пароль должен содержать не менее 6 символов' });
+        errors.push({ field: 'passwordError', message: 'РџР°СЂРѕР»СЊ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊ РЅРµ РјРµРЅРµРµ 6 СЃРёРјРІРѕР»РѕРІ' });
     }
 
     if (password !== confirmPassword) {
-        errors.push({ field: 'confirmPasswordError', message: 'Пароли не совпадают' });
+        errors.push({ field: 'confirmPasswordError', message: 'РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚' });
     }
 
     if (!form.terms.checked) {
-        alert('Необходимо принять условия использования');
+        alert('РќРµРѕР±С…РѕРґРёРјРѕ РїСЂРёРЅСЏС‚СЊ СѓСЃР»РѕРІРёСЏ СЃРѕРіР»Р°С€РµРЅРёСЏ');
         return;
     }
 
@@ -141,9 +141,9 @@ async function handleRegister(e) {
         const response = await ApiClient.register(userData);
 
         if (response.success) {
-            Utils.showNotification('Регистрация успешна! Теперь вы можете войти.', 'success');
+            Utils.showNotification('Р РµРіРёСЃС‚СЂР°С†РёСЏ СѓСЃРїРµС€РЅР°! Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ РІС…РѕРґ.', 'success');
 
-            // Автоматический вход после регистрации
+            // РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РІС…РѕРґ РїРѕСЃР»Рµ СЂРµРіРёСЃС‚СЂР°С†РёРё
             setTimeout(async () => {
                 try {
                     const loginResponse = await ApiClient.login(email, password);
@@ -167,29 +167,29 @@ async function handleRegister(e) {
             }, 2000);
 
         } else {
-            Utils.showError('emailError', response.message || 'Ошибка при регистрации');
+            Utils.showError('emailError', response.message || 'РћС€РёР±РєР° РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё');
         }
     } catch (error) {
         console.error('Registration error:', error);
 
         if (error.message.includes('already exists')) {
-            Utils.showError('emailError', 'Пользователь с таким email уже существует');
+            Utils.showError('emailError', 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЃ С‚Р°РєРёРј email СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚');
         } else {
-            Utils.showError('emailError', error.message || 'Ошибка при регистрации');
+            Utils.showError('emailError', error.message || 'РћС€РёР±РєР° РїСЂРё СЂРµРіРёСЃС‚СЂР°С†РёРё');
         }
     } finally {
         Utils.hideLoading(registerBtn);
     }
 }
 
-// Функция для выхода (уже есть в utils.js)
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ РІС‹С…РѕРґР° (РґР»СЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РІ РґСЂСѓРіРёС… С„Р°Р№Р»Р°С…)
 function logout() {
     ApiClient.logout().catch(console.error);
     Utils.clearAuth();
     window.location.href = 'index.html';
 }
 
-// Экспорт для использования в других файлах
+// Р­РєСЃРїРѕСЂС‚ РґР»СЏ Node.js (РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         handleLogin,

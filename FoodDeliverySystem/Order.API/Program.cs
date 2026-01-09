@@ -7,10 +7,16 @@ using Order.API.Services;
 using Order.API.Data;
 using Order.API.Repositories;
 using Shared.Messages.Interfaces;
-using Shared.Messages.Infrastructure;
+using Shared.Messages.Infrastructure; // Добавьте это
 using System.Text;
+using Order.API.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 // Add services
 builder.Services.AddControllers();
@@ -69,11 +75,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+builder.Services.AddHostedService<OrderEventProcessor>();
 
 // Dependency Injection
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>();
+builder.Services.AddSingleton<IMessageBusClient, RabbitMQClient>(); // Добавлено
 
 // CORS
 builder.Services.AddCors(options =>
